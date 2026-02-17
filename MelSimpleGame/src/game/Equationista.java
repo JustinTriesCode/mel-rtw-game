@@ -123,7 +123,7 @@ public class Equationista extends JPanel implements Playable {
     // EFFECTS: draws the score on the screen
     private void drawScore(Graphics2D g2) {
         g2.setFont(new Font("Serif", Font.PLAIN, 28));
-        g2.setColor(new Color(100, 100, 90)); // Soft charcoal
+        g2.setColor(new Color(100, 100, 90));
 
         String scoreText = "Score: " + score;
         FontMetrics metrics = g2.getFontMetrics();
@@ -139,7 +139,7 @@ public class Equationista extends JPanel implements Playable {
             return;
         g2.setFont(new Font("Serif", Font.PLAIN, 28));
 
-        if (statusMessage.contains("Correct")) {
+        if (statusMessage.contains("Correct") || statusMessage.contains("Great work")) {
             g2.setColor(new Color(100, 140, 100)); 
         } else {
             g2.setColor(new Color(160, 100, 100));
@@ -218,6 +218,7 @@ public class Equationista extends JPanel implements Playable {
         return newEq;
     }
 
+    // EFFECTS: handles user input, checks if the selected direction is correct, updates score and status message
     @Override
     public void handleInput(Object input) {
         String direction = (String) input;
@@ -273,8 +274,7 @@ public class Equationista extends JPanel implements Playable {
             }
         }
         if (allHigh) {
-            System.out
-                    .println("You've gotten all options above " + threshold + ". Great work! Now randomizing options.");
+            statusMessage = "You've gotten all options above " + threshold + ". Great work! Now randomizing options.";
             // update with win conditions later...
             updateOptions();
         }
