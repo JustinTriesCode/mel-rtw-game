@@ -93,14 +93,17 @@ public class Equationista extends JPanel implements Playable {
 
         // Font and color for text
         g2.setColor(new Color(248, 247, 242));
-        g2.setFont(new Font("Serif", Font.BOLD, 38));
+        g2.setFont(new Font("Serif", Font.BOLD, 48));
         g2.drawString("Select the smallest value!", 20, 30);
+        FontMetrics fontMetrics = g2.getFontMetrics();
+        int fontHeight = fontMetrics.getHeight();
+        int padding = fontHeight /2;
 
         // Draw the Equations
-        drawCenteredString(g2, "Up", centerX, y - 45);
-        drawCenteredString(g2, "Down", centerX, y + imgH + 15);
-        drawCenteredString(g2, "Left", x - 15, centerY + (imgH / 8));
-        drawCenteredString(g2, "Right", x + imgW - 15, centerY + (imgH / 8));
+        drawCenteredString(g2, "Up", centerX, y - padding);
+        drawCenteredString(g2, "Down", centerX, y + imgH + fontHeight);
+        drawCenteredString(g2, "Left", x - padding*3, centerY + (imgH / 3));
+        drawCenteredString(g2, "Right", x + imgW + padding*3, centerY + (imgH / 3));
     }
 
     // EFFECTS: helper to clean text for paintComponent
@@ -233,9 +236,10 @@ public class Equationista extends JPanel implements Playable {
         }
 
         if (direction.equals(targetDir)) {
-            int points = Math.max(-10, 10 - (attemptsThisRound * 5));
+            int multiplier = hardMode ? 5 : 1;
+            int points = Math.max(-10, (10 * multiplier) - (attemptsThisRound * 5));
             score += points;
-            statusMessage = "Correct!" + points + " points.";
+            statusMessage = "Correct! " + points + " points.";
             attemptsThisRound = 0;
             refreshDirection(direction);
             checkResetCondition();
