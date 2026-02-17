@@ -12,17 +12,12 @@ public class GameRunner extends JFrame {
     public GameRunner() {
         setTitle("Melly's Minimalist Minigames");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
+        setSize(1200, 800);
 
-        mainContainer.add(new MenuPanel(this), "MENU");
-        // mainContainer.add(new KeySmasherPanel(), "GAME1");
-
+        mainContainer.add(new MenuPanel(this), "MENU");    
         add(mainContainer);
         setLocationRelativeTo(null);
         setVisible(true);
-
-        // Equationista gameTwo = new Equationista(this, false, 100);
-        // mainContainer.add(gameTwo, "GAME2");
     }
 
     public void startGame(boolean hardMode) {

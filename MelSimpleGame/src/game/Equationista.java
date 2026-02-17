@@ -4,7 +4,6 @@ import model.Playable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-//import java.nio.Buffer;
 import java.util.HashMap;
 
 import model.Equation;
@@ -14,9 +13,13 @@ import ui.GameRunner;
 public class Equationista extends JPanel implements Playable {
     private boolean hardMode = false;
     private HashMap<String, Equation> optionsMap = new HashMap<>();
-    private int max = 100; // default max
+    private int max = 100;
     private BufferedImage arrowImage;
     private GameRunner runner;
+    private int score = 0;
+    private int attemptsThisRound = 0;
+    private String statusMessage = "";
+    private Timer messageTimer;
 
     public Equationista(GameRunner runner, boolean hardMode, int maxRange) {
         arrowImage = ResourceLoader.loadImage("arrowKeys.png");
@@ -25,6 +28,7 @@ public class Equationista extends JPanel implements Playable {
         this.hardMode = hardMode;
         this.max = maxRange;
         this.setFocusable(true);
+
         // Initialize the HashMap with arrow directions and corresponding equations
         updateOptions();
         // Layout buttons to represent arrow directions (Up, Down, Left, Right)
@@ -32,13 +36,13 @@ public class Equationista extends JPanel implements Playable {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
                 int code = e.getKeyCode();
-                if (code == java.awt.event.KeyEvent.VK_UP)
+                if (code == java.awt.event.KeyEvent.VK_UP || code == java.awt.event.KeyEvent.VK_W)
                     handleInput("Up");
-                if (code == java.awt.event.KeyEvent.VK_DOWN)
+                if (code == java.awt.event.KeyEvent.VK_DOWN || code == java.awt.event.KeyEvent.VK_S)
                     handleInput("Down");
-                if (code == java.awt.event.KeyEvent.VK_LEFT)
+                if (code == java.awt.event.KeyEvent.VK_LEFT || code == java.awt.event.KeyEvent.VK_A)
                     handleInput("Left");
-                if (code == java.awt.event.KeyEvent.VK_RIGHT)
+                if (code == java.awt.event.KeyEvent.VK_RIGHT || code == java.awt.event.KeyEvent.VK_D)
                     handleInput("Right");
                 if (code == java.awt.event.KeyEvent.VK_ESCAPE) {
                     runner.showScreen("MENU");
@@ -46,7 +50,7 @@ public class Equationista extends JPanel implements Playable {
                 }
             }
         });
-        resizeImg(1.5);
+        resizeImg(1);
     }
 
     public void resizeImg(double scale) {
@@ -71,6 +75,12 @@ public class Equationista extends JPanel implements Playable {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+        drawGameAssets(g2);
+        drawScore(g2);
+        drawStatusMessage(g2);
+    }
+
+    private void drawGameAssets(Graphics2D g2) {
         int centerX = getWidth() / 2;
         int centerY = getHeight() / 2;
         int imgW = arrowImage.getWidth();
@@ -82,21 +92,61 @@ public class Equationista extends JPanel implements Playable {
         g2.drawImage(arrowImage, x, y, null);
 
         // Font and color for text
-        g2.setColor(new Color(251, 250, 245));
-        g2.setFont(new Font("Serif", Font.BOLD, 24));
-        g2.drawString("Equationista: Select the smallest value!", 20, 30);
+        g2.setColor(new Color(248, 247, 242));
+        g2.setFont(new Font("Serif", Font.BOLD, 38));
+        g2.drawString("Select the smallest value!", 20, 30);
 
         // Draw the Equations
-        g2.drawString(getEqText("Up"), centerX - 15, y - 10);
-        g2.drawString(getEqText("Down"), centerX - 15, y + imgH + 25);
-        g2.drawString(getEqText("Left"), x - 10, centerY + (imgH / 4));
-        g2.drawString(getEqText("Right"), x + imgW, centerY + (imgH / 4));
+        drawCenteredString(g2, "Up", centerX, y - 45);
+        drawCenteredString(g2, "Down", centerX, y + imgH + 15);
+        drawCenteredString(g2, "Left", x - 15, centerY + (imgH / 8));
+        drawCenteredString(g2, "Right", x + imgW - 15, centerY + (imgH / 8));
     }
 
     // EFFECTS: helper to clean text for paintComponent
     private String getEqText(String direction) {
         Equation eq = optionsMap.get(direction);
         return (eq != null) ? eq.toString() : "?";
+    }
+
+    // EFFECTS: helper to draw centered text for paintComponent
+    private void drawCenteredString(Graphics2D g2, String direction, int targetX, int targetY) {
+        String text = getEqText(direction);
+        FontMetrics metrics = g2.getFontMetrics();
+        int textWidth = metrics.stringWidth(text);
+        g2.drawString(text, targetX - (textWidth / 2), targetY);
+    }
+
+    // EFFECTS: draws the score on the screen
+    private void drawScore(Graphics2D g2) {
+        g2.setFont(new Font("Serif", Font.PLAIN, 28));
+        g2.setColor(new Color(100, 100, 90)); // Soft charcoal
+
+        String scoreText = "Score: " + score;
+        FontMetrics metrics = g2.getFontMetrics();
+        int x = getWidth() - metrics.stringWidth(scoreText) - 40;
+        int y = 50;
+
+        g2.drawString(scoreText, x, y);
+    }
+
+    // EFFECTS: draws the status message at the bottom of the screen
+    private void drawStatusMessage(Graphics2D g2) {
+        if (statusMessage.isEmpty())
+            return;
+        g2.setFont(new Font("Serif", Font.PLAIN, 28));
+
+        if (statusMessage.contains("Correct")) {
+            g2.setColor(new Color(100, 140, 100)); 
+        } else {
+            g2.setColor(new Color(160, 100, 100));
+        }
+
+        FontMetrics metrics = g2.getFontMetrics();
+        int x = (getWidth() - metrics.stringWidth(statusMessage)) / 2;
+        int y = getHeight() - 60;
+
+        g2.drawString(statusMessage, x, y);
     }
 
     // EFFECTS: sets difficulty by adjusting max values for random generation
@@ -173,6 +223,7 @@ public class Equationista extends JPanel implements Playable {
 
         String targetDir = "Up";
         int lowestValue = Integer.MAX_VALUE;
+
         for (String dir : optionsMap.keySet()) {
             int value = optionsMap.get(dir).evaluate();
             if (value < lowestValue) {
@@ -182,10 +233,46 @@ public class Equationista extends JPanel implements Playable {
         }
 
         if (direction.equals(targetDir)) {
-            System.out.println("Correct!");
+            int points = Math.max(-10, 10 - (attemptsThisRound * 5));
+            score += points;
+            statusMessage = "Correct!" + points + " points.";
+            attemptsThisRound = 0;
             refreshDirection(direction);
+            checkResetCondition();
         } else {
-            System.out.println("Wrong! Try again.");
+            attemptsThisRound++;
+            statusMessage = "Try again.";
+        }
+
+        if (messageTimer != null)
+            messageTimer.stop();
+        messageTimer = new Timer(1500, e -> {
+            statusMessage = "";
+            repaint();
+        });
+        messageTimer.setRepeats(false);
+        messageTimer.start();
+
+        repaint();
+    }
+
+    // EFFECTRS: checks if all equations are above a certain threshold to trigger a
+    // reset
+    private void checkResetCondition() {
+        boolean allHigh = true;
+        int threshold = 90;
+
+        for (Equation eq : optionsMap.values()) {
+            if (eq.evaluate() < threshold) {
+                allHigh = false;
+                break;
+            }
+        }
+        if (allHigh) {
+            System.out
+                    .println("You've gotten all options above " + threshold + ". Great work! Now randomizing options.");
+            // update with win conditions later...
+            updateOptions();
         }
     }
 }
