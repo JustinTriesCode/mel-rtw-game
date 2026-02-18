@@ -7,7 +7,7 @@ import javax.swing.JPanel;
 import model.Playable;
 
 public class AlphabetSoup extends JPanel implements Playable {
-    
+
     public AlphabetSoup() {
         setBackground(Color.DARK_GRAY);
         // TODO: Add KeyListener here
@@ -21,6 +21,11 @@ public class AlphabetSoup extends JPanel implements Playable {
         // TODO: g.drawImage(...)
     }
 
-    @Override public void resetGame() { /* TODO */ }
-    @Override public void handleInput(Object input) { /* TODO */ }
+    @Override
+    public void resetGame() {
+        /* TODO */ }
+
+    @Override
+    public void handleInput(Object input) {
+        /* TODO */ }
 }
