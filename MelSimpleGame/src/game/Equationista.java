@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.Random;
 
 import model.Equation;
 import ui.ResourceLoader;
@@ -16,22 +17,34 @@ public class Equationista extends JPanel implements Playable {
     private int max = 100;
     private BufferedImage arrowImage;
     private GameRunner runner;
-    private int score = 0;
     private int attemptsThisRound = 0;
     private String statusMessage = "";
     private Timer messageTimer;
+    private GameSession session;
+    private Random random = new Random();
+    private int cycleCount = 0;
+    private int targetCycleCount;
 
-    public Equationista(GameRunner runner, boolean hardMode, int maxRange) {
+    // EFFECTS: initializes the game, sets up key bindings, and starts the game
+    // session timer
+    public Equationista(GameRunner runner, boolean hardMode, int maxRange, int durationSeconds) {
         arrowImage = ResourceLoader.loadImage("arrowKeys.png");
         setBackground(new Color(45, 45, 45));
         this.runner = runner;
         this.hardMode = hardMode;
         this.max = maxRange;
         this.setFocusable(true);
+        this.session = new GameSession(durationSeconds, () -> handleGameOver(), this);
+        this.targetCycleCount = updateTargetCycleCount();
 
         // Initialize the HashMap with arrow directions and corresponding equations
         updateOptions();
-        // Layout buttons to represent arrow directions (Up, Down, Left, Right)
+        keyListener(runner);
+        resizeImg(1);
+    }
+
+    // Layout buttons to represent arrow directions (Up, Down, Left, Right)
+    private void keyListener(GameRunner runner) {
         this.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
@@ -50,9 +63,9 @@ public class Equationista extends JPanel implements Playable {
                 }
             }
         });
-        resizeImg(1);
     }
 
+    // EFFECTS: resizes the arrow keys image based on the given scale factor
     public void resizeImg(double scale) {
         BufferedImage original = ResourceLoader.loadImage("arrowKeys.png");
         int w = (int) (original.getWidth() * scale);
@@ -77,9 +90,12 @@ public class Equationista extends JPanel implements Playable {
 
         drawGameAssets(g2);
         drawScore(g2);
+        drawCycleLeft(g2);
         drawStatusMessage(g2);
+        drawTimer(g2);
     }
 
+    // EFFECTS: helper to draw the main game assets (arrow image and equations)
     private void drawGameAssets(Graphics2D g2) {
         int centerX = getWidth() / 2;
         int centerY = getHeight() / 2;
@@ -94,16 +110,22 @@ public class Equationista extends JPanel implements Playable {
         // Font and color for text
         g2.setColor(new Color(248, 247, 242));
         g2.setFont(new Font("Serif", Font.BOLD, 48));
-        g2.drawString("Select the smallest value!", 20, 30);
+        g2.drawString("Select the smallest value!", 20, 40);
         FontMetrics fontMetrics = g2.getFontMetrics();
         int fontHeight = fontMetrics.getHeight();
-        int padding = fontHeight /2;
+        int padding = fontHeight / 2;
 
         // Draw the Equations
         drawCenteredString(g2, "Up", centerX, y - padding);
         drawCenteredString(g2, "Down", centerX, y + imgH + fontHeight);
-        drawCenteredString(g2, "Left", x - padding*3, centerY + (imgH / 3));
-        drawCenteredString(g2, "Right", x + imgW + padding*3, centerY + (imgH / 3));
+        drawCenteredString(g2, "Left", x - padding * 3, centerY + (imgH / 3));
+        drawCenteredString(g2, "Right", x + imgW + padding * 3, centerY + (imgH / 3));
+    }
+
+    // EFFECTS: helper to draw timer
+    private void drawTimer(Graphics2D g2) {
+        simpleFontSetting(g2);
+        g2.drawString("Time: " + session.getTimeString(), 30, getHeight() - 50);
     }
 
     // EFFECTS: helper to clean text for paintComponent
@@ -122,15 +144,32 @@ public class Equationista extends JPanel implements Playable {
 
     // EFFECTS: draws the score on the screen
     private void drawScore(Graphics2D g2) {
-        g2.setFont(new Font("Serif", Font.PLAIN, 28));
-        g2.setColor(new Color(100, 100, 90));
+        simpleFontSetting(g2);
 
-        String scoreText = "Score: " + score;
+        String scoreText = "Score: " + session.getSessionScore();
         FontMetrics metrics = g2.getFontMetrics();
         int x = getWidth() - metrics.stringWidth(scoreText) - 40;
         int y = 50;
 
         g2.drawString(scoreText, x, y);
+    }
+
+    // EFFECTS: draws the cycle count left on the screen
+    private void drawCycleLeft(Graphics2D g2) {
+        simpleFontSetting(g2);
+
+        String scoreText = "Cycles Left: " + (targetCycleCount - cycleCount);
+        FontMetrics metrics = g2.getFontMetrics();
+        int x = getWidth() - metrics.stringWidth(scoreText) - 40;
+        int y = getHeight() - 50;
+
+        g2.drawString(scoreText, x, y);
+    }
+
+    // EFFECTS: helper to set consistent font and color
+    private void simpleFontSetting(Graphics2D g2) {
+        g2.setFont(new Font("Serif", Font.PLAIN, 28));
+        g2.setColor(new Color(100, 100, 90));
     }
 
     // EFFECTS: draws the status message at the bottom of the screen
@@ -140,7 +179,7 @@ public class Equationista extends JPanel implements Playable {
         g2.setFont(new Font("Serif", Font.PLAIN, 28));
 
         if (statusMessage.contains("Correct") || statusMessage.contains("Great work")) {
-            g2.setColor(new Color(100, 140, 100)); 
+            g2.setColor(new Color(100, 140, 100));
         } else {
             g2.setColor(new Color(160, 100, 100));
         }
@@ -150,6 +189,13 @@ public class Equationista extends JPanel implements Playable {
         int y = getHeight() - 60;
 
         g2.drawString(statusMessage, x, y);
+    }
+
+    // EFFECTS: game over pop up and return to menu
+    private void handleGameOver() {
+        String finalMsg = "Time's up! Score: " + session.getSessionScore();
+        JOptionPane.showMessageDialog(this, finalMsg);
+        runner.showScreen("MENU");
     }
 
     // EFFECTS: sets difficulty by adjusting max values for random generation
@@ -163,8 +209,12 @@ public class Equationista extends JPanel implements Playable {
         resetGame();
     }
 
+    // EFFECTS: resets the game state for a new session
     @Override
     public void resetGame() {
+        cycleCount = 0;
+        attemptsThisRound = 0;
+        statusMessage = "";
         updateOptions();
         repaint();
     }
@@ -218,7 +268,8 @@ public class Equationista extends JPanel implements Playable {
         return newEq;
     }
 
-    // EFFECTS: handles user input, checks if the selected direction is correct, updates score and status message
+    // EFFECTS: handles user input, checks if the selected direction is correct,
+    // updates score and status message
     @Override
     public void handleInput(Object input) {
         String direction = (String) input;
@@ -238,12 +289,10 @@ public class Equationista extends JPanel implements Playable {
 
         if (direction.equals(targetDir)) {
             int multiplier = hardMode ? 5 : 1;
-            int points = Math.max(-10, (10 * multiplier) - (attemptsThisRound * 5));
-            score += points;
-            statusMessage = "Correct! " + points + " points.";
+            session.addPointsLogic(attemptsThisRound, multiplier);
             attemptsThisRound = 0;
             refreshDirection(direction);
-            checkResetCondition();
+            checkResetCondition(cycleCount++);
         } else {
             attemptsThisRound++;
             statusMessage = "Try again.";
@@ -263,9 +312,9 @@ public class Equationista extends JPanel implements Playable {
 
     // EFFECTRS: checks if all equations are above a certain threshold to trigger a
     // reset
-    private void checkResetCondition() {
+    private void checkResetCondition(int cycleCount) {
         boolean allHigh = true;
-        int threshold = 90;
+        int threshold = 85;
 
         for (Equation eq : optionsMap.values()) {
             if (eq.evaluate() < threshold) {
@@ -275,8 +324,17 @@ public class Equationista extends JPanel implements Playable {
         }
         if (allHigh) {
             statusMessage = "You've gotten all options above " + threshold + ". Great work! Now randomizing options.";
-            // update with win conditions later...
+            updateOptions();
+        } else if (cycleCount >= targetCycleCount) {
+            statusMessage = "Correct! " + cycleCount + " cycle(s) completed. Now randomizing options.";
+            targetCycleCount = updateTargetCycleCount();
+            this.cycleCount = 0;
+            session.addPoints(cycleCount);
             updateOptions();
         }
+    }
+
+    public int updateTargetCycleCount() {
+        return random.nextInt(3) + 8;
     }
 }
