@@ -1,10 +1,10 @@
-package game;
+package main.java.com.justintriescode.mellysgame.game;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import javax.swing.JPanel;
 
-import model.Playable;
+import main.java.com.justintriescode.mellysgame.model.Playable;
 
 public class AlphabetSoup extends JPanel implements Playable {
 

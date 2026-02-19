@@ -1,15 +1,16 @@
-package game;
+package main.java.com.justintriescode.mellysgame.game;
 
-import model.Playable;
 import javax.swing.*;
+
+import main.java.com.justintriescode.mellysgame.model.Equation;
+import main.java.com.justintriescode.mellysgame.model.Playable;
+import main.java.com.justintriescode.mellysgame.ui.GameRunner;
+import main.java.com.justintriescode.mellysgame.ui.ResourceLoader;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Random;
-
-import model.Equation;
-import ui.ResourceLoader;
-import ui.GameRunner;
 
 public class Equationista extends JPanel implements Playable {
     private boolean hardMode = false;

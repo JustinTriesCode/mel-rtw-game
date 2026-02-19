@@ -1,4 +1,4 @@
-package game;
+package main.java.com.justintriescode.mellysgame.game;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -48,7 +48,7 @@ public class GameSession {
     // EFFECTS: calculates and adds points based on the number of attempts and
     // current streak
     public void addPointsLogic(int attemptsThisRound, int multiplier) {
-        int points = Math.max(-10, (10 * multiplier) - (attemptsThisRound * 5));
+        int points = Math.max((multiplier * -10), (10 * multiplier) - (attemptsThisRound * (multiplier * 5)));
         if (attemptsThisRound == 0)
             streak++;
         else

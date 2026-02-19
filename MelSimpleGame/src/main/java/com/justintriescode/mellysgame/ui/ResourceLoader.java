@@ -1,4 +1,4 @@
-package ui;
+package main.java.com.justintriescode.mellysgame.ui;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -7,21 +7,9 @@ import java.io.File;
 
 public class ResourceLoader {
 
-    // Load an image from res/images
-    // public static BufferedImage loadImage(String fileName) {
-    // try {
-    // return ImageIO.read(new File("res/images/" + fileName));
-    // } catch (IOException e) {
-    // System.out.println("Error: Could not find image " + fileName);
-    // return null;
-    // }
-    // }
-
     public static BufferedImage loadImage(String fileName) {
         try {
-            // This looks inside the 'src' or 'bin' folder context
-            // Try adding a "/" at the start if it still fails: "/images/" + fileName
-            return ImageIO.read(ResourceLoader.class.getResourceAsStream("/res/images/" + fileName));
+            return ImageIO.read(ResourceLoader.class.getResourceAsStream("/main/resources/images/" + fileName));
         } catch (Exception e) {
             System.out.println("Error: Could not find image " + fileName);
             return null;
