@@ -25,7 +25,7 @@ jobs:
           jpackage --type exe `
           --dest dist `
           --name "MellyMinigames" `
-          --main-jar target/MellyMinigames.jar `
+          --main-jar target/MellyMinigames-1.0-SNAPSHOT.jar
           --main-class ui.Main `
           --win-shortcut `
           --win-menu `
