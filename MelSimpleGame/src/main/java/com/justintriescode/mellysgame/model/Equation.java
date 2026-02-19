@@ -1,4 +1,4 @@
-package model;
+package main.java.com.justintriescode.mellysgame.model;
 
 import java.util.Random;
 

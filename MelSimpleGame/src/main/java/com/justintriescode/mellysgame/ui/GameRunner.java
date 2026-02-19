@@ -1,9 +1,10 @@
-package ui;
+package main.java.com.justintriescode.mellysgame.ui;
 
 import javax.swing.*;
-import java.awt.*;
 
-import game.Equationista;
+import main.java.com.justintriescode.mellysgame.game.Equationista;
+
+import java.awt.*;
 
 public class GameRunner extends JFrame {
     private CardLayout layout = new CardLayout();

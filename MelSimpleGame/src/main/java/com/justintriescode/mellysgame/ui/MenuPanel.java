@@ -1,4 +1,4 @@
-package ui;
+package main.java.com.justintriescode.mellysgame.ui;
 
 import javax.swing.*;
 import java.awt.*;

@@ -4,9 +4,10 @@ package test;
 //import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 
+import main.java.com.justintriescode.mellysgame.model.Equation;
+import main.java.com.justintriescode.mellysgame.model.Equation.EquationType;
+
 import static org.junit.jupiter.api.Assertions.*;
-import model.Equation;
-import model.Equation.EquationType;
 
 public class equationTest {
 
