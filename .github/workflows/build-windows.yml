@@ -23,6 +23,7 @@ jobs:
       - name: Package with jpackage
         run: |
           jpackage --type exe `
+            --input target `
             --dest dist `
             --name "MellyMinigames" `
             --main-jar target/MellyMinigames-1.0.jar `
