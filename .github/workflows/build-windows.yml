@@ -23,13 +23,13 @@ jobs:
       - name: Package with jpackage
         run: |
           jpackage --type exe `
-          --dest dist `
-          --name "MellyMinigames" `
-          --main-jar target/MellyMinigames-1.0-SNAPSHOT.jar
-          --main-class ui.Main `
-          --win-shortcut `
-          --win-menu `
-          --vendor "Justin"
+            --dest dist `
+            --name "MellyMinigames" `
+            --main-jar target/MellyMinigames-1.0.jar `
+            --main-class ui.Main `
+            --win-shortcut `
+            --win-menu `
+            --vendor "Justin"
 
       - name: Upload Release
         uses: softprops/action-gh-release@v2
