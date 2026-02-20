@@ -25,7 +25,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>ui.Main</mainClass>
+                            <mainClass>main.java.com.justintriescode.mellysgame.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
