@@ -1,8 +1,8 @@
-package main.java.com.justintriescode.mellysgame.ui;
+package com.justintriescode.mellysgame.ui;
 
 import javax.swing.*;
 
-import main.java.com.justintriescode.mellysgame.game.Equationista;
+import com.justintriescode.mellysgame.game.Equationista;
 
 import java.awt.*;
 

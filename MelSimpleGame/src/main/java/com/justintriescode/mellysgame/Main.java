@@ -1,6 +1,6 @@
-package main.java.com.justintriescode.mellysgame;
+package com.justintriescode.mellysgame;
 
-import main.java.com.justintriescode.mellysgame.ui.GameRunner;
+import com.justintriescode.mellysgame.ui.GameRunner;
 
 public class Main {
     public static void main(String[] args) {
