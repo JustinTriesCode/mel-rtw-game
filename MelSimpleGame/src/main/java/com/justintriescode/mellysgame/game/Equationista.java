@@ -1,11 +1,11 @@
-package main.java.com.justintriescode.mellysgame.game;
+package com.justintriescode.mellysgame.game;
 
 import javax.swing.*;
 
-import main.java.com.justintriescode.mellysgame.model.Equation;
-import main.java.com.justintriescode.mellysgame.model.Playable;
-import main.java.com.justintriescode.mellysgame.ui.GameRunner;
-import main.java.com.justintriescode.mellysgame.ui.ResourceLoader;
+import com.justintriescode.mellysgame.model.Equation;
+import com.justintriescode.mellysgame.model.Playable;
+import com.justintriescode.mellysgame.ui.GameRunner;
+import com.justintriescode.mellysgame.ui.ResourceLoader;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -20,11 +20,12 @@ public class Equationista extends JPanel implements Playable {
     private GameRunner runner;
     private int attemptsThisRound = 0;
     private String statusMessage = "";
-    private Timer messageTimer;
+    private final Timer messageTimer;
     private GameSession session;
     private Random random = new Random();
     private int cycleCount = 0;
     private int targetCycleCount;
+    private PlayerProfile profile = new PlayerProfile();
 
     // EFFECTS: initializes the game, sets up key bindings, and starts the game
     // session timer
@@ -35,13 +36,20 @@ public class Equationista extends JPanel implements Playable {
         this.hardMode = hardMode;
         this.max = maxRange;
         this.setFocusable(true);
-        this.session = new GameSession(durationSeconds, () -> handleGameOver(), this);
+        this.session = new GameSession(profile, durationSeconds, () -> handleGameOver(), this);
         this.targetCycleCount = updateTargetCycleCount();
 
         // Initialize the HashMap with arrow directions and corresponding equations
         updateOptions();
         keyListener(runner);
         resizeImg(1);
+
+        // initailize the message timer for status updates
+        messageTimer = new Timer(1500, e -> {
+            statusMessage = "";
+            repaint();
+        });
+        messageTimer.setRepeats(false);
     }
 
     // Layout buttons to represent arrow directions (Up, Down, Left, Right)
@@ -69,7 +77,7 @@ public class Equationista extends JPanel implements Playable {
     // EFFECTS: resizes the arrow keys image based on the given scale factor
     public void resizeImg(double scale) {
         BufferedImage original = ResourceLoader.loadImage("arrowKeys.png");
-        int w = (int) (original.getWidth() * scale);
+        int w = (int) (original.getWidth() * scale);    
         int h = (int) (original.getHeight() * scale);
         if (original != null) {
             Image scaled = original.getScaledInstance(w, h, Image.SCALE_SMOOTH);
@@ -297,16 +305,8 @@ public class Equationista extends JPanel implements Playable {
         } else {
             attemptsThisRound++;
             statusMessage = "Try again.";
+            messageTimer.restart();
         }
-
-        if (messageTimer != null)
-            messageTimer.stop();
-        messageTimer = new Timer(1500, e -> {
-            statusMessage = "";
-            repaint();
-        });
-        messageTimer.setRepeats(false);
-        messageTimer.start();
 
         repaint();
     }

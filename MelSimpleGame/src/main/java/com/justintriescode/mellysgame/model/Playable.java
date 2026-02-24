@@ -1,4 +1,4 @@
-package main.java.com.justintriescode.mellysgame.model;
+package com.justintriescode.mellysgame.model;
 
 public interface Playable {
     void resetGame();      // Reset scores/timers

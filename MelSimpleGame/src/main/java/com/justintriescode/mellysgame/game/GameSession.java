@@ -1,4 +1,4 @@
-package main.java.com.justintriescode.mellysgame.game;
+package com.justintriescode.mellysgame.game;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -9,8 +9,7 @@ import javax.swing.Timer;
 
 public class GameSession {
     // for global score/stats
-    private static int totalLifetimeScore = 0; // to be added to a report
-    private static long totalLifetimeSeconds = 0; // to be added to a report
+    private final PlayerProfile profile;
     private static Map<LocalDate, DailyStats> history = new HashMap<>();
 
     // for current session only
@@ -23,7 +22,8 @@ public class GameSession {
 
     // EFFECTS: initializes a new game session with the given duration and callback
     // for when time is up
-    public GameSession(int duration, Runnable onTimeUp, JComponent owner) {
+    public GameSession(PlayerProfile profile, int duration, Runnable onTimeUp, JComponent owner) {
+        this.profile = profile;
         this.sessionScore = 0;
         this.secondsRemaining = duration;
         this.streak = 0;
@@ -39,7 +39,7 @@ public class GameSession {
     private void tick() {
         if (secondsRemaining > 0) {
             secondsRemaining--;
-            totalLifetimeSeconds++;
+            profile.increaseLifetimeSeconds();
         } else {
             endSession();
         }
@@ -60,7 +60,7 @@ public class GameSession {
     // EFFECTS: adds points to the current session score and updates lifetime stats
     public void addPoints(int points) {
         sessionScore += points;
-        totalLifetimeScore += points;
+        profile.increaseLifetimeScore(points);
         updateDailyStats(points);
     }
 
@@ -78,6 +78,7 @@ public class GameSession {
     private void endSession() {
         isFinished = true;
         countdownTimer.stop();
+        profile.updateStats(this.sessionScore);
         if (onTimeUp != null)
             onTimeUp.run();
     }
