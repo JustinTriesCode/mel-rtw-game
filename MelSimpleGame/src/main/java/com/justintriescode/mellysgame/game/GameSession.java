@@ -57,11 +57,35 @@ public class GameSession {
         addPoints(points);
     }
 
+    // EFFECTS: adds points with a simple multiplier
+    public void addPointsWithMultiplier(int basePoints, int multiplier) {
+        int total = basePoints * multiplier;
+        addPoints(total);
+    }
+
     // EFFECTS: adds points to the current session score and updates lifetime stats
     public void addPoints(int points) {
-        sessionScore += points;
-        profile.increaseLifetimeScore(points);
-        updateDailyStats(points);
+        int finalPoints = points + calculateStreakBonus();
+        sessionScore += finalPoints;
+        profile.increaseLifetimeScore(finalPoints);
+        updateDailyStats(finalPoints);
+    }
+
+    // EFFECTS: registers an attempt and updates the current streak accordingly
+    public void registerAttempt(boolean isCorrect) {
+        if (isCorrect) {
+            streak++;
+        } else {
+            streak = 0;
+        }
+    }
+
+    private int calculateStreakBonus() {
+        if (streak > 10)
+            return 10;
+        if (streak > 5)
+            return 5;
+        return 0;
     }
 
     // EFFECTS: calculates bonus points based on the current streak
@@ -101,6 +125,14 @@ public class GameSession {
 
         public int getDailyScore() {
             return dailyScore;
+        }
+    }
+
+    // EFFECTS: stops the countdown timer to prevent it from running in the
+    // background
+    public void pauseTimer() {
+        if (countdownTimer != null) {
+            countdownTimer.stop();
         }
     }
 
