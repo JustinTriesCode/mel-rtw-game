@@ -1,9 +1,7 @@
 package com.justintriescode.mellysgame.game;
 
-import javax.swing.*;
 
 import com.justintriescode.mellysgame.model.Equation;
-import com.justintriescode.mellysgame.model.Playable;
 import com.justintriescode.mellysgame.ui.GameRunner;
 import com.justintriescode.mellysgame.ui.ResourceLoader;
 
@@ -12,44 +10,31 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Random;
 
-public class Equationista extends JPanel implements Playable {
+public class Equationista extends BaseMiniGame {
     private boolean hardMode = false;
     private HashMap<String, Equation> optionsMap = new HashMap<>();
     private int max = 100;
     private BufferedImage arrowImage;
-    private GameRunner runner;
     private int attemptsThisRound = 0;
-    private String statusMessage = "";
-    private final Timer messageTimer;
-    private GameSession session;
     private Random random = new Random();
     private int cycleCount = 0;
     private int targetCycleCount;
-    private PlayerProfile profile = new PlayerProfile();
 
     // EFFECTS: initializes the game, sets up key bindings, and starts the game
     // session timer
     public Equationista(GameRunner runner, boolean hardMode, int maxRange, int durationSeconds) {
-        arrowImage = ResourceLoader.loadImage("arrowKeys.png");
+        super(runner, durationSeconds);
+
         setBackground(new Color(45, 45, 45));
-        this.runner = runner;
         this.hardMode = hardMode;
         this.max = maxRange;
-        this.setFocusable(true);
-        this.session = new GameSession(profile, durationSeconds, () -> handleGameOver(), this);
         this.targetCycleCount = updateTargetCycleCount();
+        arrowImage = ResourceLoader.loadImage("arrowKeys.png");
 
         // Initialize the HashMap with arrow directions and corresponding equations
         updateOptions();
         keyListener(runner);
         resizeImg(1);
-
-        // initailize the message timer for status updates
-        messageTimer = new Timer(1500, e -> {
-            statusMessage = "";
-            repaint();
-        });
-        messageTimer.setRepeats(false);
     }
 
     // Layout buttons to represent arrow directions (Up, Down, Left, Right)
@@ -66,10 +51,6 @@ public class Equationista extends JPanel implements Playable {
                     handleInput("Left");
                 if (code == java.awt.event.KeyEvent.VK_RIGHT || code == java.awt.event.KeyEvent.VK_D)
                     handleInput("Right");
-                if (code == java.awt.event.KeyEvent.VK_ESCAPE) {
-                    runner.showScreen("MENU");
-                    return;
-                }
             }
         });
     }
@@ -77,7 +58,13 @@ public class Equationista extends JPanel implements Playable {
     // EFFECTS: resizes the arrow keys image based on the given scale factor
     public void resizeImg(double scale) {
         BufferedImage original = ResourceLoader.loadImage("arrowKeys.png");
-        int w = (int) (original.getWidth() * scale);    
+
+        if (original == null) {
+            System.err.println("CRITICAL: Could not find arrowKeys.png at the specified path!");
+            return;
+        }
+
+        int w = (int) (original.getWidth() * scale);
         int h = (int) (original.getHeight() * scale);
         if (original != null) {
             Image scaled = original.getScaledInstance(w, h, Image.SCALE_SMOOTH);
@@ -100,7 +87,6 @@ public class Equationista extends JPanel implements Playable {
         drawGameAssets(g2);
         drawScore(g2);
         drawCycleLeft(g2);
-        drawStatusMessage(g2);
         drawTimer(g2);
     }
 
@@ -131,12 +117,6 @@ public class Equationista extends JPanel implements Playable {
         drawCenteredString(g2, "Right", x + imgW + padding * 3, centerY + (imgH / 3));
     }
 
-    // EFFECTS: helper to draw timer
-    private void drawTimer(Graphics2D g2) {
-        simpleFontSetting(g2);
-        g2.drawString("Time: " + session.getTimeString(), 30, getHeight() - 50);
-    }
-
     // EFFECTS: helper to clean text for paintComponent
     private String getEqText(String direction) {
         Equation eq = optionsMap.get(direction);
@@ -151,18 +131,6 @@ public class Equationista extends JPanel implements Playable {
         g2.drawString(text, targetX - (textWidth / 2), targetY);
     }
 
-    // EFFECTS: draws the score on the screen
-    private void drawScore(Graphics2D g2) {
-        simpleFontSetting(g2);
-
-        String scoreText = "Score: " + session.getSessionScore();
-        FontMetrics metrics = g2.getFontMetrics();
-        int x = getWidth() - metrics.stringWidth(scoreText) - 40;
-        int y = 50;
-
-        g2.drawString(scoreText, x, y);
-    }
-
     // EFFECTS: draws the cycle count left on the screen
     private void drawCycleLeft(Graphics2D g2) {
         simpleFontSetting(g2);
@@ -173,38 +141,6 @@ public class Equationista extends JPanel implements Playable {
         int y = getHeight() - 50;
 
         g2.drawString(scoreText, x, y);
-    }
-
-    // EFFECTS: helper to set consistent font and color
-    private void simpleFontSetting(Graphics2D g2) {
-        g2.setFont(new Font("Serif", Font.PLAIN, 28));
-        g2.setColor(new Color(100, 100, 90));
-    }
-
-    // EFFECTS: draws the status message at the bottom of the screen
-    private void drawStatusMessage(Graphics2D g2) {
-        if (statusMessage.isEmpty())
-            return;
-        g2.setFont(new Font("Serif", Font.PLAIN, 28));
-
-        if (statusMessage.contains("Correct") || statusMessage.contains("Great work")) {
-            g2.setColor(new Color(100, 140, 100));
-        } else {
-            g2.setColor(new Color(160, 100, 100));
-        }
-
-        FontMetrics metrics = g2.getFontMetrics();
-        int x = (getWidth() - metrics.stringWidth(statusMessage)) / 2;
-        int y = getHeight() - 60;
-
-        g2.drawString(statusMessage, x, y);
-    }
-
-    // EFFECTS: game over pop up and return to menu
-    private void handleGameOver() {
-        String finalMsg = "Time's up! Score: " + session.getSessionScore();
-        JOptionPane.showMessageDialog(this, finalMsg);
-        runner.showScreen("MENU");
     }
 
     // EFFECTS: sets difficulty by adjusting max values for random generation
