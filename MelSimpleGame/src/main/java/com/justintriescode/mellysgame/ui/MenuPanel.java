@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MenuPanel extends JPanel {
-    private int selectedSeconds = 3 * 60; // Default to 3 minutes
+    private int selectedSeconds = 1 * 60; // Default to 1 minute
 
     public MenuPanel(GameRunner runner) {
         setBackground(new Color(210, 210, 200));
@@ -18,26 +18,28 @@ public class MenuPanel extends JPanel {
         title.setForeground(new Color(90, 90, 90));
         title.setFont(new Font("Serif", Font.BOLD, 58));
 
-        JButton game1Btn = new JButton("Alphabet Soup");
+        JButton game1EasyBtn = new JButton("Letter Soup");
+        JButton game1HardBtn = new JButton("Alphabet Soup");
         JButton game2EasyBtn = new JButton("Numberista");
         JButton game2HardBtn = new JButton("Equationista");
 
-        formatButton(game1Btn);
+        formatButton(game1EasyBtn);
+        formatButton(game1HardBtn);
         formatButton(game2EasyBtn);
         formatButton(game2HardBtn);
 
-        // Game 1 (Logic to be added later)
-        game1Btn.addActionListener(e -> runner.showScreen("GAME1"));
+        // Game 1
+        game1EasyBtn.addActionListener(e -> runner.startGame("AlphabetSoup", false, selectedSeconds));
+        game1HardBtn.addActionListener(e -> runner.startGame("AlphabetSoup", true, selectedSeconds));
         // Game 2
-        game2EasyBtn.addActionListener(e -> runner.startGame(false, selectedSeconds));
-        game2HardBtn.addActionListener(e -> runner.startGame(true, selectedSeconds));
+        game2EasyBtn.addActionListener(e -> runner.startGame("Equationista",false, selectedSeconds));
+        game2HardBtn.addActionListener(e -> runner.startGame("Equationista",true, selectedSeconds));
 
-        buttonWrapper.add(title);
-        buttonWrapper.add(game1Btn);
+        buttonWrapper.add(game1EasyBtn);
+        buttonWrapper.add(game1HardBtn);
         buttonWrapper.add(game2EasyBtn);
         buttonWrapper.add(game2HardBtn);
 
-        this.add(buttonWrapper);
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2; // Span across both columns
@@ -79,15 +81,15 @@ public class MenuPanel extends JPanel {
         togglePanel.setLayout(new BoxLayout(togglePanel, BoxLayout.Y_AXIS));
         togglePanel.setBackground(new Color(210, 210, 200));
 
-        JRadioButton threeMinBtn = new JRadioButton("3 Minute Session", true);
-        JRadioButton fiveMinBtn = new JRadioButton("5 Minute Session", false);
+        JRadioButton oneMinBtn = new JRadioButton("1 Minute Session", true);
+        JRadioButton twoMinBtn = new JRadioButton("2 Minute Session", false);
 
         ButtonGroup group = new ButtonGroup();
-        group.add(threeMinBtn);
-        group.add(fiveMinBtn);
+        group.add(oneMinBtn);
+        group.add(twoMinBtn);
 
-        threeMinBtn.addActionListener(e -> this.selectedSeconds = 3 * 60);
-        fiveMinBtn.addActionListener(e -> this.selectedSeconds = 5 * 60);
+        oneMinBtn.addActionListener(e -> this.selectedSeconds = 1 * 60);
+        twoMinBtn.addActionListener(e -> this.selectedSeconds = 2 * 60);
 
         JLabel label = new JLabel("Timer Settings:");
         label.setFont(new Font("Serif", Font.ITALIC, 16));
@@ -95,7 +97,7 @@ public class MenuPanel extends JPanel {
         togglePanel.add(label);
         togglePanel.add(Box.createVerticalStrut(10));
 
-        for (JRadioButton btn : new JRadioButton[] { threeMinBtn, fiveMinBtn }) {
+        for (JRadioButton btn : new JRadioButton[] { oneMinBtn, twoMinBtn }) {
             btn.setFont(new Font("Serif", Font.PLAIN, 18));
             btn.setForeground(new Color(90, 90, 90));
             btn.setBackground(togglePanel.getBackground());

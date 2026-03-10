@@ -3,13 +3,12 @@ package com.justintriescode.mellysgame.ui;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 public class ResourceLoader {
 
     public static BufferedImage loadImage(String fileName) {
         try {
-            return ImageIO.read(ResourceLoader.class.getResourceAsStream("/main/resources/images/" + fileName));
+            return ImageIO.read(ResourceLoader.class.getResourceAsStream("/images/" + fileName));
         } catch (Exception e) {
             System.out.println("Error: Could not find image " + fileName);
             return null;
@@ -18,12 +17,13 @@ public class ResourceLoader {
 
     // Load a custom font from res/fonts
     public static Font loadFont(String fileName, float size) {
-        try {
-            Font font = Font.createFont(Font.TRUETYPE_FONT, new File("res/fonts/" + fileName));
-            return font.deriveFont(size);
-        } catch (Exception e) {
-            System.out.println("Error: Could not load font. Using Arial instead.");
-            return new Font("Arial", Font.BOLD, (int) size);
-        }
+    try {
+        return Font.createFont(Font.TRUETYPE_FONT, 
+            ResourceLoader.class.getResourceAsStream("/fonts/" + fileName))
+            .deriveFont(size);
+    } catch (Exception e) {
+        System.out.println("Error: Could not load font " + fileName + ". Using Serif.");
+        return new Font("Serif", Font.BOLD, (int) size);
     }
+}
 }
