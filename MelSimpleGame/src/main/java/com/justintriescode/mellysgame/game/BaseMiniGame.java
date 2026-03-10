@@ -32,6 +32,7 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
         this.getActionMap().put("backToMenu", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
+                stopGame();
                 runner.showScreen("MENU");
             }
         });
@@ -88,5 +89,19 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
         int y = getHeight() - 60;
 
         g2.drawString(statusMessage, x, y);
+    }
+
+    // EFFECTS: stops the game session's active timers
+    public void stopGame() {
+        if (session != null) {
+            session.pauseTimer();
+        }
+        if (messageTimer != null)
+            messageTimer.stop();
+        // For AlphabetSoup specifically:
+        stopSpecificTimers();
+    }
+
+    protected void stopSpecificTimers() {
     }
 }

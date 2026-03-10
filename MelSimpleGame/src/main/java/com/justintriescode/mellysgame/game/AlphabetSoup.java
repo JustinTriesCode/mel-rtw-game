@@ -22,8 +22,8 @@ public class AlphabetSoup extends BaseMiniGame {
     private Color easyModeColor = new Color(200, 200, 190);
     private final Color[] palette = {
             new Color(0, 255, 255), // Cyan
-            new Color(255, 0, 255), // Magenta
-            new Color(255, 255, 0), // Yellow
+            new Color(220, 130, 220), // Magenta
+            new Color(240, 230, 140), // Yellow
             new Color(255, 165, 0), // Orange
             new Color(100, 149, 237) // Blue
     };
@@ -34,6 +34,7 @@ public class AlphabetSoup extends BaseMiniGame {
     private boolean isWaiting = false;
     private boolean isHardMode;
     private List<GameLetter> activeLetters = new ArrayList<>();
+    private int attempts = 0;
 
     public AlphabetSoup(GameRunner runner, boolean isHardMode, int durationSeconds) {
         super(runner, durationSeconds);
@@ -141,13 +142,24 @@ public class AlphabetSoup extends BaseMiniGame {
         }
 
         if (foundCorrect) {
-            session.addPoints(1);
+            int baseValue = 10;
+            if (alpha < 0.5f) {
+                baseValue += 5; // speed bonus
+            }
+            if (attempts > 2) {
+                baseValue -= 20; // attempt penalty
+            } else if (attempts > 0) {
+                baseValue -= 10;
+            }
+            attempts = 0;
+            session.addPointsWithMultiplier(baseValue, isHardMode ? 3 : 1);
             statusMessage = "Match!";
             isWaiting = true;
             spawnTimer.start();
         } else {
-            statusMessage = "Wrong color or letter!";
+            statusMessage = "Wrong letter!";
             messageTimer.restart();
+            attempts++;
         }
         repaint();
     }
@@ -239,5 +251,13 @@ public class AlphabetSoup extends BaseMiniGame {
             this.position = position;
             this.color = color;
         }
+    }
+
+    @Override
+    protected void stopSpecificTimers() {
+        if (spawnTimer != null)
+            spawnTimer.stop();
+        if (fadeTimer != null)
+            fadeTimer.stop();
     }
 }
