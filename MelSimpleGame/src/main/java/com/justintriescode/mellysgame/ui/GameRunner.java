@@ -11,6 +11,7 @@ import java.awt.*;
 public class GameRunner extends JFrame {
     private CardLayout layout = new CardLayout();
     private JPanel mainContainer = new JPanel(layout);
+    private String currentSymptomSeverity;
 
     public GameRunner() {
         setTitle("Melly's Minimalist Minigames");
@@ -21,6 +22,71 @@ public class GameRunner extends JFrame {
         add(mainContainer);
         setLocationRelativeTo(null);
         setVisible(true);
+        // trigger the symptom popup right after the UI is visible
+        SwingUtilities.invokeLater(() -> promptForSymptom());
+    }
+
+    private void promptForSymptom() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setOpaque(false);
+
+        ButtonGroup group = new ButtonGroup();
+        String[] options = { "Mild", "Moderate", "Severe" };
+        JRadioButton[] buttons = new JRadioButton[options.length];
+
+        for (int i = 0; i < options.length; i++) {
+            buttons[i] = new JRadioButton(options[i]);
+            buttons[i].setFont(new Font("Serif", Font.PLAIN, 18));
+            buttons[i].setOpaque(false);
+            if (i == 0)
+                buttons[i].setSelected(true);
+            group.add(buttons[i]);
+            panel.add(buttons[i]);
+        }
+
+        showGenericDialog("How are your symptoms today?", panel, () -> {
+            for (JRadioButton b : buttons) {
+                if (b.isSelected()) {
+                    this.currentSymptomSeverity = b.getText();
+                    break;
+                }
+            }
+        });
+    }
+
+    public void showGenericDialog(String title, JPanel content, Runnable onConfirm) {
+        JDialog dialog = new JDialog(this, true);
+        dialog.setUndecorated(true);
+
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 20));
+        UIStyleUtils.stylePopupPanel(mainPanel); // Using your utility!
+
+        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Serif", Font.ITALIC, 28));
+        titleLabel.setForeground(UIStyleUtils.TEXT_DARK);
+        mainPanel.add(titleLabel, BorderLayout.NORTH);
+
+        content.setOpaque(false);
+        mainPanel.add(content, BorderLayout.CENTER);
+
+        JButton confirmBtn = new JButton("Confirm");
+        UIStyleUtils.formatButton(confirmBtn, 20);
+        confirmBtn.addActionListener(e -> {
+            onConfirm.run(); // Execute the logic passed in
+            dialog.dispose();
+        });
+        mainPanel.add(confirmBtn, BorderLayout.SOUTH);
+
+        dialog.add(mainPanel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    // Getter so your GameSession or MiniGames can grab the value for scoring/stats
+    public String getCurrentSymptomSeverity() {
+        return currentSymptomSeverity;
     }
 
     // EFFECTS: starts a new game session with the specified difficulty and
@@ -29,7 +95,7 @@ public class GameRunner extends JFrame {
 
         BaseMiniGame newGame;
         if (gameType.equals("Equationista")) {
-            // hardMode param determines number range (? 10 : 100) 
+            // hardMode param determines number range (? 10 : 100)
             newGame = new Equationista(this, hardMode, hardMode ? 10 : 100, durationSeconds);
         } else if (gameType.equals("AlphabetSoup")) {
             newGame = new AlphabetSoup(this, hardMode, durationSeconds);
@@ -59,5 +125,22 @@ public class GameRunner extends JFrame {
     // EFFECTS: switches to the specified screen by name
     public void showScreen(String name) {
         layout.show(mainContainer, name);
+    }
+
+    public void showGameOver(int score, int streak) {
+        JPanel statsPanel = new JPanel(new GridLayout(2, 1));
+        statsPanel.setOpaque(false);
+
+        JLabel sLabel = new JLabel("Final Score: " + score);
+        JLabel stLabel = new JLabel("Longest Streak: " + streak);
+        sLabel.setForeground(UIStyleUtils.TEXT_DARK);
+        stLabel.setForeground(UIStyleUtils.TEXT_DARK);
+
+        statsPanel.add(sLabel);
+        statsPanel.add(stLabel);
+
+        showGenericDialog("Session Complete", statsPanel, () -> {
+            showScreen("MENU");
+        });
     }
 }

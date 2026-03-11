@@ -87,7 +87,7 @@ public class GameSession {
 
     // bonus points for specific milestones
     public void processMilestone(double difficultyMultiplier, int intensity) {
-        int milestoneBase = 20; 
+        int milestoneBase = 20;
         double totalBonus = (milestoneBase * intensity) * difficultyMultiplier;
         applyPoints((int) Math.round(totalBonus));
     }
@@ -131,6 +131,13 @@ public class GameSession {
         }
     }
 
+    // resumes the countdown timer if the session is not finished
+    public void resumeTimer() {
+        if (countdownTimer != null && !countdownTimer.isRunning()) {
+            countdownTimer.start();
+        }
+    }
+
     // Getters and setters
     public static DailyStats getStatsForDate(LocalDate date) {
         return history.getOrDefault(date, new DailyStats());
@@ -150,5 +157,9 @@ public class GameSession {
 
     public int getSessionScore() {
         return sessionScore;
+    }
+
+    public int getStreak() {
+        return streak;
     }
 }
