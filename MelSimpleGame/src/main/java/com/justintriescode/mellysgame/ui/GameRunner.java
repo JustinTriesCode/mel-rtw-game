@@ -3,20 +3,25 @@ package com.justintriescode.mellysgame.ui;
 import javax.swing.*;
 
 import com.justintriescode.mellysgame.game.Equationista;
+import com.justintriescode.mellysgame.data.DataManager;
 import com.justintriescode.mellysgame.game.AlphabetSoup;
 import com.justintriescode.mellysgame.game.BaseMiniGame;
+import com.justintriescode.mellysgame.game.PlayerProfile;
 
 import java.awt.*;
+import java.io.IOException;
 
 public class GameRunner extends JFrame {
     private CardLayout layout = new CardLayout();
     private JPanel mainContainer = new JPanel(layout);
     private String currentSymptomSeverity;
+    private PlayerProfile playerProfile;
 
     public GameRunner() {
         setTitle("Melly's Minimalist Minigames");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
+        this.playerProfile = DataManager.load();
 
         mainContainer.add(new MenuPanel(this), "MENU");
         add(mainContainer);
@@ -24,6 +29,10 @@ public class GameRunner extends JFrame {
         setVisible(true);
         // trigger the symptom popup right after the UI is visible
         SwingUtilities.invokeLater(() -> promptForSymptom());
+    }
+
+    public PlayerProfile getPlayerProfile() {
+        return playerProfile;
     }
 
     private void promptForSymptom() {
@@ -60,7 +69,7 @@ public class GameRunner extends JFrame {
         dialog.setUndecorated(true);
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 20));
-        UIStyleUtils.stylePopupPanel(mainPanel); // Using your utility!
+        UIStyleUtils.stylePopupPanel(mainPanel); 
 
         JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
         titleLabel.setFont(new Font("Serif", Font.ITALIC, 28));
@@ -73,7 +82,7 @@ public class GameRunner extends JFrame {
         JButton confirmBtn = new JButton("Confirm");
         UIStyleUtils.formatButton(confirmBtn, 20);
         confirmBtn.addActionListener(e -> {
-            onConfirm.run(); // Execute the logic passed in
+            onConfirm.run(); 
             dialog.dispose();
         });
         mainPanel.add(confirmBtn, BorderLayout.SOUTH);
@@ -142,5 +151,21 @@ public class GameRunner extends JFrame {
         showGenericDialog("Session Complete", statsPanel, () -> {
             showScreen("MENU");
         });
+    }
+
+     public void handleSessionEnd(String gameName, boolean isHard, int score, int streak) {
+        playerProfile.recordSessionContext(
+        gameName, 
+        this.currentSymptomSeverity, 
+        isHard, 
+        score
+    );
+        playerProfile.recordSessionContext(gameName, currentSymptomSeverity, isHard, score);
+        try {
+            DataManager.save(playerProfile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        showGameOver(score, streak);
     }
 }

@@ -35,7 +35,9 @@ jobs:
             --main-class com.justintriescode.mellysgame.Main `
             --win-shortcut `
             --win-menu `
+            --win-dir-chooser `
             --vendor "Justin"
+            --app-version "1.0"
 
       - name: Upload Release
         uses: softprops/action-gh-release@v2

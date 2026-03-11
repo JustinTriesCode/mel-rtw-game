@@ -1,11 +1,14 @@
 package com.justintriescode.mellysgame.game;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.Timer;
+
+import com.justintriescode.mellysgame.data.DataManager;
 
 public class GameSession {
     // for global score/stats
@@ -19,6 +22,7 @@ public class GameSession {
     private Runnable onTimeUp;
     private boolean isFinished = false; // need to add a check for this later
     private int streak = 0;
+    private boolean isActive = true;
 
     // for point calculation logic
     private static final int BASE_POINTS = 10;
@@ -43,10 +47,14 @@ public class GameSession {
 
     // EFFECTS: handles the countdown logic for each tick of the timer
     private void tick() {
+        if (!isActive) {
+            return;
+        }
         if (secondsRemaining > 0) {
             secondsRemaining--;
             profile.increaseLifetimeSeconds();
         } else {
+            isActive = false;
             endSession();
         }
     }
@@ -136,6 +144,14 @@ public class GameSession {
         if (countdownTimer != null && !countdownTimer.isRunning()) {
             countdownTimer.start();
         }
+    }
+
+    public void abort() {
+        this.isActive = false;
+        if (countdownTimer != null) {
+            countdownTimer.stop();
+        }
+        this.onTimeUp = null;
     }
 
     // Getters and setters
