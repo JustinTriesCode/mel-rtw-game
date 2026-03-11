@@ -2,18 +2,26 @@ package com.justintriescode.mellysgame.game;
 
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import static javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW;
 
 import com.justintriescode.mellysgame.model.Playable;
 import com.justintriescode.mellysgame.ui.GameRunner;
+import com.justintriescode.mellysgame.game.GameSession;
+import com.justintriescode.mellysgame.ui.UIStyleUtils;
 
 import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Window;
 
 public abstract class BaseMiniGame extends JPanel implements Playable {
     protected GameRunner runner;
@@ -28,12 +36,11 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
         this.session = new GameSession(new PlayerProfile(), durationSeconds, this::handleGameOver, this);
 
         // escape key to return to menu
-        this.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), "backToMenu");
-        this.getActionMap().put("backToMenu", new AbstractAction() {
+        this.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), "openPauseMenu");
+        this.getActionMap().put("openPauseMenu", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                stopGame();
-                runner.showScreen("MENU");
+                handleEscape();
             }
         });
 
@@ -45,8 +52,7 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
     }
 
     protected void handleGameOver() {
-        JOptionPane.showMessageDialog(this, "Time's up! Score: " + session.getSessionScore());
-        runner.showScreen("MENU");
+        runner.showGameOver(session.getSessionScore(), session.getStreak());
     }
 
     // Shared UI helpers
@@ -103,5 +109,39 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
     }
 
     protected void stopSpecificTimers() {
+    }
+
+    private void handleEscape() {
+        session.pauseTimer();
+
+        JPanel pausePanel = new JPanel();
+        pausePanel.setLayout(new BoxLayout(pausePanel, BoxLayout.Y_AXIS));
+        pausePanel.setOpaque(false);
+
+        JLabel label = new JLabel("Game Paused. Would you like to quit?");
+        label.setFont(new Font("Serif", Font.PLAIN, 20));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        pausePanel.add(label);
+
+        // resume button
+        JButton resumeBtn = new JButton("Resume Game");
+        UIStyleUtils.formatButton(resumeBtn, 20);
+        resumeBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        resumeBtn.addActionListener(e -> {
+            Window w = SwingUtilities.getWindowAncestor(resumeBtn);
+            if (w != null)
+                w.dispose();
+        });
+        pausePanel.add(Box.createVerticalStrut(20));
+        pausePanel.add(resumeBtn);
+
+        runner.showGenericDialog("Paused", pausePanel, () -> {
+            stopGame();
+            runner.showScreen("MENU");
+        });
+
+        if (this.isDisplayable()) {
+            session.resumeTimer();
+        }
     }
 }

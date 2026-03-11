@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MenuPanel extends JPanel {
-    private int selectedSeconds = 1 * 60; // Default to 1 minute
+    private int selectedSeconds = 1 * 60; // Defaults to 1 minute
 
     public MenuPanel(GameRunner runner) {
         setBackground(new Color(210, 210, 200));
@@ -23,17 +23,17 @@ public class MenuPanel extends JPanel {
         JButton game2EasyBtn = new JButton("Numberista");
         JButton game2HardBtn = new JButton("Equationista");
 
-        formatButton(game1EasyBtn);
-        formatButton(game1HardBtn);
-        formatButton(game2EasyBtn);
-        formatButton(game2HardBtn);
+        UIStyleUtils.formatButton(game1EasyBtn, 42);
+        UIStyleUtils.formatButton(game1HardBtn, 42);
+        UIStyleUtils.formatButton(game2EasyBtn, 42);
+        UIStyleUtils.formatButton(game2HardBtn, 42);
 
         // Game 1
         game1EasyBtn.addActionListener(e -> runner.startGame("AlphabetSoup", false, selectedSeconds));
         game1HardBtn.addActionListener(e -> runner.startGame("AlphabetSoup", true, selectedSeconds));
         // Game 2
-        game2EasyBtn.addActionListener(e -> runner.startGame("Equationista",false, selectedSeconds));
-        game2HardBtn.addActionListener(e -> runner.startGame("Equationista",true, selectedSeconds));
+        game2EasyBtn.addActionListener(e -> runner.startGame("Equationista", false, selectedSeconds));
+        game2HardBtn.addActionListener(e -> runner.startGame("Equationista", true, selectedSeconds));
 
         buttonWrapper.add(game1EasyBtn);
         buttonWrapper.add(game1HardBtn);
@@ -61,19 +61,13 @@ public class MenuPanel extends JPanel {
         this.add(createTimeToggle(), gbc);
     }
 
-    private void formatButton(JButton button) {
-        button.setBackground(new Color(230, 235, 230));
-        button.setForeground(new Color(100, 100, 85));
-        button.setFont(new Font("Serif", Font.BOLD, 42));
-        button.setPreferredSize(new Dimension(350, 60));
-
-        button.setContentAreaFilled(false);
-        button.setOpaque(true);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-
-        button.setBorder(BorderFactory.createLineBorder(new Color(180, 185, 180), 2));
-    }
+    //TODO
+    // create menu option to view stats
+    // private void createStatsBtn() {
+    //     // Placeholder for stats display
+    //     JOptionPane.showMessageDialog(this, "WIP", "Player Stats",
+    //             JOptionPane.INFORMATION_MESSAGE);
+    // }
 
     // EFFECTS: creates a panel with radio buttons to select game duration
     private JPanel createTimeToggle() {
@@ -98,14 +92,19 @@ public class MenuPanel extends JPanel {
         togglePanel.add(Box.createVerticalStrut(10));
 
         for (JRadioButton btn : new JRadioButton[] { oneMinBtn, twoMinBtn }) {
-            btn.setFont(new Font("Serif", Font.PLAIN, 18));
-            btn.setForeground(new Color(90, 90, 90));
-            btn.setBackground(togglePanel.getBackground());
-            btn.setFocusPainted(false);
+            formatRadioButton(btn);
             btn.setAlignmentX(Component.CENTER_ALIGNMENT);
             togglePanel.add(btn);
         }
 
         return togglePanel;
+    }
+
+    // Helper to keep radio buttons looking consistent with your theme
+    private void formatRadioButton(JRadioButton btn) {
+        btn.setFont(new Font("Serif", Font.PLAIN, 18));
+        btn.setForeground(new Color(90, 90, 90));
+        btn.setBackground(new Color(210, 210, 200));
+        btn.setFocusPainted(false);
     }
 }
