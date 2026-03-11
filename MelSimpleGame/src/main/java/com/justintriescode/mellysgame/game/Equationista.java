@@ -1,6 +1,5 @@
 package com.justintriescode.mellysgame.game;
 
-
 import com.justintriescode.mellysgame.model.Equation;
 import com.justintriescode.mellysgame.ui.GameRunner;
 import com.justintriescode.mellysgame.ui.ResourceLoader;
@@ -19,6 +18,8 @@ public class Equationista extends BaseMiniGame {
     private Random random = new Random();
     private int cycleCount = 0;
     private int targetCycleCount;
+    private static final double HARD_MODE_SCALE = 2.0;
+    private static final double EASY_MODE_SCALE = 0.42;
 
     // EFFECTS: initializes the game, sets up key bindings, and starts the game
     // session timer
@@ -135,12 +136,12 @@ public class Equationista extends BaseMiniGame {
     private void drawCycleLeft(Graphics2D g2) {
         simpleFontSetting(g2);
 
-        String scoreText = "Cycles Left: " + (targetCycleCount - cycleCount);
+        String cycleText = "Cycles Left: " + (targetCycleCount - cycleCount);
         FontMetrics metrics = g2.getFontMetrics();
-        int x = getWidth() - metrics.stringWidth(scoreText) - 40;
+        int x = getWidth() - metrics.stringWidth(cycleText) - 40;
         int y = getHeight() - 50;
 
-        g2.drawString(scoreText, x, y);
+        g2.drawString(cycleText, x, y);
     }
 
     // EFFECTS: sets difficulty by adjusting max values for random generation
@@ -233,8 +234,8 @@ public class Equationista extends BaseMiniGame {
         }
 
         if (direction.equals(targetDir)) {
-            int multiplier = hardMode ? 5 : 1;
-            session.addPointsLogic(attemptsThisRound, multiplier);
+            double multiplier = hardMode ? HARD_MODE_SCALE : EASY_MODE_SCALE;
+            session.processScore(attemptsThisRound, multiplier, 0);
             attemptsThisRound = 0;
             refreshDirection(direction);
             checkResetCondition(cycleCount++);
@@ -251,7 +252,7 @@ public class Equationista extends BaseMiniGame {
     // reset
     private void checkResetCondition(int cycleCount) {
         boolean allHigh = true;
-        int threshold = 85;
+        int threshold = 80;
 
         for (Equation eq : optionsMap.values()) {
             if (eq.evaluate() < threshold) {
@@ -265,13 +266,14 @@ public class Equationista extends BaseMiniGame {
         } else if (cycleCount >= targetCycleCount) {
             statusMessage = "Correct! " + cycleCount + " cycle(s) completed. Now randomizing options.";
             targetCycleCount = updateTargetCycleCount();
+            double multiplier = hardMode ? HARD_MODE_SCALE : EASY_MODE_SCALE;
+            session.processMilestone(multiplier, cycleCount);
             this.cycleCount = 0;
-            session.addPoints(cycleCount);
             updateOptions();
         }
     }
 
     public int updateTargetCycleCount() {
-        return random.nextInt(3) + 8;
+        return random.nextInt(2) + 3;
     }
 }

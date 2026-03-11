@@ -142,17 +142,11 @@ public class AlphabetSoup extends BaseMiniGame {
         }
 
         if (foundCorrect) {
-            int baseValue = 10;
-            if (alpha < 0.5f) {
-                baseValue += 5; // speed bonus
-            }
-            if (attempts > 2) {
-                baseValue -= 20; // attempt penalty
-            } else if (attempts > 0) {
-                baseValue -= 10;
-            }
+            int diffMult = isHardMode ? 3 : 1;
+            int speedBonus = (alpha < 0.5f) ? 5 : 0;
+            
             attempts = 0;
-            session.addPointsWithMultiplier(baseValue, isHardMode ? 3 : 1);
+            session.processScore(attempts, diffMult, speedBonus);
             statusMessage = "Match!";
             isWaiting = true;
             spawnTimer.start();

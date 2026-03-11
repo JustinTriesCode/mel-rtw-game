@@ -20,6 +20,12 @@ public class GameSession {
     private boolean isFinished = false; // need to add a check for this later
     private int streak = 0;
 
+    // for point calculation logic
+    private static final int BASE_POINTS = 10;
+    private static final int PENALTY_PER_ATTEMPT = 10;
+    private static final int STREAK_THRESHOLD_MID = 10;
+    private static final int STREAK_BONUS_MID = 16;
+
     // EFFECTS: initializes a new game session with the given duration and callback
     // for when time is up
     public GameSession(PlayerProfile profile, int duration, Runnable onTimeUp, JComponent owner) {
@@ -45,56 +51,45 @@ public class GameSession {
         }
     }
 
-    // EFFECTS: calculates and adds points based on the number of attempts and
-    // current streak
-    public void addPointsLogic(int attemptsThisRound, int multiplier) {
-        int points = Math.max((multiplier * -10), (10 * multiplier) - (attemptsThisRound * (multiplier * 5)));
-        if (attemptsThisRound == 0)
-            streak++;
-        else
-            streak = 0;
-        points = streakBonus(points, multiplier);
-        addPoints(points);
-    }
-
-    // EFFECTS: adds points with a simple multiplier
-    public void addPointsWithMultiplier(int basePoints, int multiplier) {
-        int total = basePoints * multiplier;
-        addPoints(total);
-    }
-
-    // EFFECTS: adds points to the current session score and updates lifetime stats
-    public void addPoints(int points) {
-        int finalPoints = points + calculateStreakBonus();
-        sessionScore += finalPoints;
-        profile.increaseLifetimeScore(finalPoints);
-        updateDailyStats(finalPoints);
-    }
-
-    // EFFECTS: registers an attempt and updates the current streak accordingly
-    public void registerAttempt(boolean isCorrect) {
-        if (isCorrect) {
+    public void processScore(int attempts, double difficultyMultiplier, int speedBonus) {
+        if (attempts == 0) {
             streak++;
         } else {
             streak = 0;
         }
+
+        // base Calculation
+        int basePoints = BASE_POINTS;
+        int attemptPenalty = attempts * PENALTY_PER_ATTEMPT;
+
+        // apply Multipliers and Bonuses
+        double earnedPoints = (basePoints - attemptPenalty) * difficultyMultiplier;
+        earnedPoints += speedBonus;
+        earnedPoints += calculateStreakBonus();
+        earnedPoints = Math.max(earnedPoints, -10 * difficultyMultiplier);
+        int finalPoints = (int) Math.round(earnedPoints);
+        applyPoints(finalPoints);
     }
 
     private int calculateStreakBonus() {
-        if (streak > 10)
-            return 10;
-        if (streak > 5)
-            return 5;
+        if (streak > STREAK_THRESHOLD_MID)
+            return STREAK_BONUS_MID;
+        if (streak > STREAK_THRESHOLD_MID / 2)
+            return STREAK_BONUS_MID / 2;
         return 0;
     }
 
-    // EFFECTS: calculates bonus points based on the current streak
-    public int streakBonus(int points, int multiplier) {
-        if (streak > 5)
-            points += 5;
-        if (streak > 10)
-            points += 10;
-        return points;
+    private void applyPoints(int points) {
+        sessionScore += points;
+        profile.increaseLifetimeScore(points);
+        updateDailyStats(points);
+    }
+
+    // bonus points for specific milestones
+    public void processMilestone(double difficultyMultiplier, int intensity) {
+        int milestoneBase = 20; 
+        double totalBonus = (milestoneBase * intensity) * difficultyMultiplier;
+        applyPoints((int) Math.round(totalBonus));
     }
 
     // EFFECTS: ends the current game session, stops the timer, and triggers the
