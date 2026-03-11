@@ -36,7 +36,7 @@ jobs:
             --win-shortcut `
             --win-menu `
             --win-dir-chooser `
-            --vendor "Justin"
+            --vendor "Justin" `
             --app-version "1.0"
 
       - name: Upload Release
