@@ -24,7 +24,7 @@ public class Equationista extends BaseMiniGame {
     // EFFECTS: initializes the game, sets up key bindings, and starts the game
     // session timer
     public Equationista(GameRunner runner, boolean hardMode, int maxRange, int durationSeconds) {
-        super(runner, durationSeconds);
+        super(runner, hardMode, durationSeconds);
 
         setBackground(new Color(45, 45, 45));
         this.hardMode = hardMode;

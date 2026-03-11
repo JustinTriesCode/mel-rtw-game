@@ -15,7 +15,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -28,9 +27,12 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
     protected GameSession session;
     protected String statusMessage = "";
     protected Timer messageTimer;
+    protected boolean hardMode;
+    protected boolean isGameRunning = false;
 
-    public BaseMiniGame(GameRunner runner, int durationSeconds) {
+    public BaseMiniGame(GameRunner runner, boolean hardMode, int durationSeconds) {
         this.runner = runner;
+        this.hardMode = hardMode;
         this.setBackground(new Color(45, 45, 45));
         this.setFocusable(true);
         this.session = new GameSession(new PlayerProfile(), durationSeconds, this::handleGameOver, this);
@@ -99,13 +101,21 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
 
     // EFFECTS: stops the game session's active timers
     public void stopGame() {
+        isGameRunning = false;
         if (session != null) {
-            session.pauseTimer();
+            session.abort();
         }
+
         if (messageTimer != null)
             messageTimer.stop();
         // For AlphabetSoup specifically:
         stopSpecificTimers();
+
+        runner.handleSessionEnd(
+                this.getClass().getSimpleName(),
+                this.hardMode,
+                session.getSessionScore(),
+                session.getStreak());
     }
 
     protected void stopSpecificTimers() {
@@ -136,6 +146,7 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
         pausePanel.add(resumeBtn);
 
         runner.showGenericDialog("Paused", pausePanel, () -> {
+            this.isGameRunning = false;
             stopGame();
             runner.showScreen("MENU");
         });

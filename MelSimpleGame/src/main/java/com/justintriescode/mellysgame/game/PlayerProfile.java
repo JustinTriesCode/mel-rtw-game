@@ -1,10 +1,13 @@
 package com.justintriescode.mellysgame.game;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.justintriescode.mellysgame.data.SessionRecord;
 
 public class PlayerProfile {
     private int totalSessionsPlayed = 0;
@@ -88,5 +91,25 @@ public class PlayerProfile {
 
     public void setDailyHistory(Map<LocalDate, Integer> h) {
         this.dailyHistory = h;
+    }
+
+    // session data
+    private List<SessionRecord> sessionHistory = new ArrayList<>();
+
+    public void recordSessionContext(String game, String severity, boolean hard, int score) {
+        this.totalSessionsPlayed++;
+        this.totalLifetimeScore += score;
+        this.sessionHistory.add(new SessionRecord(game, severity, hard, score));
+
+        LocalDate today = LocalDate.now();
+        dailyHistory.put(today, dailyHistory.getOrDefault(today, 0) + score);
+    }
+
+    public List<SessionRecord> getSessionHistory() {
+        return sessionHistory;
+    }
+
+    public void setSessionHistory(List<SessionRecord> history) {
+        this.sessionHistory = history;
     }
 }

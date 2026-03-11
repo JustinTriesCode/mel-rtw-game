@@ -37,7 +37,7 @@ public class AlphabetSoup extends BaseMiniGame {
     private int attempts = 0;
 
     public AlphabetSoup(GameRunner runner, boolean isHardMode, int durationSeconds) {
-        super(runner, durationSeconds);
+        super(runner, isHardMode, durationSeconds);
 
         this.isHardMode = isHardMode;
         this.customFont = ResourceLoader.loadFont("soupFont.ttf", 120f);
@@ -144,7 +144,7 @@ public class AlphabetSoup extends BaseMiniGame {
         if (foundCorrect) {
             int diffMult = isHardMode ? 3 : 1;
             int speedBonus = (alpha < 0.5f) ? 5 : 0;
-            
+
             attempts = 0;
             session.processScore(attempts, diffMult, speedBonus);
             statusMessage = "Match!";
