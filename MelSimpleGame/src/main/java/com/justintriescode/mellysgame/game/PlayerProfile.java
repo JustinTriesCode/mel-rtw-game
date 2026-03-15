@@ -13,6 +13,7 @@ public class PlayerProfile {
     private int totalSessionsPlayed = 0;
     private int totalLifetimeScore;
     private int totalLifetimeSeconds;
+    private String lastRecordedSeverity = "None";
 
     // TODO: setup logic for top score and name, and add to ui to update name
     private String topScorerName = "AAA";
@@ -91,6 +92,30 @@ public class PlayerProfile {
 
     public void setDailyHistory(Map<LocalDate, Integer> h) {
         this.dailyHistory = h;
+    }
+
+    public int getTotalSessionsPlayed() {
+        return totalSessionsPlayed;
+    }
+
+    public void setTotalSessionsPlayed(int totalSessionsPlayed) {
+        this.totalSessionsPlayed = totalSessionsPlayed;
+    }
+
+    public int getTotalLifetimeSeconds() {
+        return totalLifetimeSeconds;
+    }
+
+    public void setTotalLifetimeSeconds(int totalLifetimeSeconds) {
+        this.totalLifetimeSeconds = totalLifetimeSeconds;
+    }
+
+    public String getLastRecordedSeverity() {
+        return lastRecordedSeverity;
+    }
+
+    public void setLastRecordedSeverity(String s) {
+        this.lastRecordedSeverity = s;
     }
 
     // session data

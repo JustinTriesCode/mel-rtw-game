@@ -19,7 +19,7 @@ public class UIStyleUtils {
         button.setForeground(TEXT_COLOR);
         button.setFont(new Font("Serif", Font.BOLD, fontSize));
         button.setOpaque(true);
-        button.setContentAreaFilled(false);
+        button.setContentAreaFilled(true);
         button.setBorderPainted(false);
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createLineBorder(new Color(180, 185, 180), 2));

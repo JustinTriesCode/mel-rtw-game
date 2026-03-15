@@ -61,6 +61,12 @@ public class GameRunner extends JFrame {
                     break;
                 }
             }
+            this.playerProfile.setLastRecordedSeverity(this.currentSymptomSeverity);
+            try {
+                com.justintriescode.mellysgame.data.DataManager.save(this.playerProfile);
+            } catch (IOException e) {
+                // Add error handling or logging here if needed
+            }
         });
     }
 
@@ -69,7 +75,7 @@ public class GameRunner extends JFrame {
         dialog.setUndecorated(true);
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 20));
-        UIStyleUtils.stylePopupPanel(mainPanel); 
+        UIStyleUtils.stylePopupPanel(mainPanel);
 
         JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
         titleLabel.setFont(new Font("Serif", Font.ITALIC, 28));
@@ -82,7 +88,7 @@ public class GameRunner extends JFrame {
         JButton confirmBtn = new JButton("Confirm");
         UIStyleUtils.formatButton(confirmBtn, 20);
         confirmBtn.addActionListener(e -> {
-            onConfirm.run(); 
+            onConfirm.run();
             dialog.dispose();
         });
         mainPanel.add(confirmBtn, BorderLayout.SOUTH);
@@ -153,13 +159,12 @@ public class GameRunner extends JFrame {
         });
     }
 
-     public void handleSessionEnd(String gameName, boolean isHard, int score, int streak) {
+    public void handleSessionEnd(String gameName, boolean isHard, int score, int streak) {
         playerProfile.recordSessionContext(
-        gameName, 
-        this.currentSymptomSeverity, 
-        isHard, 
-        score
-    );
+                gameName,
+                this.currentSymptomSeverity,
+                isHard,
+                score);
         playerProfile.recordSessionContext(gameName, currentSymptomSeverity, isHard, score);
         try {
             DataManager.save(playerProfile);
