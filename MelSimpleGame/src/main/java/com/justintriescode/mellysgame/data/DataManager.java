@@ -9,15 +9,25 @@ import com.justintriescode.mellysgame.game.PlayerProfile;
 
 public class DataManager {
     private static final ObjectMapper mapper = new ObjectMapper()
-        .registerModule(new JavaTimeModule()); 
-    private static final File SAVE_FILE = new File("savegame.json");
+            .registerModule(new JavaTimeModule());
+    private static final File SAVE_FILE = new File(System.getProperty("user.home"), "mellysgame_save.json");
+
+    // public static void save(PlayerProfile profile) throws IOException {
+    // mapper.writeValue(SAVE_FILE, profile);
+    // }
 
     public static void save(PlayerProfile profile) throws IOException {
-        mapper.writeValue(SAVE_FILE, profile);
+        try {
+            mapper.writeValue(SAVE_FILE, profile);
+        } catch (IOException e) {
+            // Add error handling or logging here if needed
+            throw e;
+        }
     }
 
     public static PlayerProfile load() {
-        if (!SAVE_FILE.exists()) return new PlayerProfile();
+        if (!SAVE_FILE.exists())
+            return new PlayerProfile();
         try {
             return mapper.readValue(SAVE_FILE, PlayerProfile.class);
         } catch (IOException e) {

@@ -28,6 +28,7 @@ jobs:
         working-directory: ./MelSimpleGame
         run: |
           jpackage --type exe `
+            --win-console `
             --input target `
             --dest dist `
             --name "MellyMinigames" `

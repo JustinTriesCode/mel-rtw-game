@@ -7,6 +7,7 @@
     <groupId>com.justin</groupId>
     <artifactId>MellyMinigames</artifactId>
     <version>1.0</version>
+    <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -44,7 +45,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.justintriescode.mellysgame.ui.GameRunner</mainClass>
+                                    <mainClass>com.justintriescode.mellysgame.Main</mainClass>
                                 </transformer>
                             </transformers>
                             <filters>
