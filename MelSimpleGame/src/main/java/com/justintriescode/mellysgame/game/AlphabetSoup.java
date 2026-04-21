@@ -12,6 +12,13 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.List;
 
+/**
+ * Alphabet Soup Mini-Game:
+ * Players must quickly identify and press the correct letter.
+ * In easy mode, only one letter appears without a colour dimension.
+ * In hard mode, multiple letters appear in different colours, but only one
+ * matches the sphere.
+ */
 public class AlphabetSoup extends BaseMiniGame {
     // font variables
     private float alpha = 0.0f; // For fade effect (0.0 to 1.0)
@@ -28,6 +35,7 @@ public class AlphabetSoup extends BaseMiniGame {
             new Color(100, 149, 237) // Blue
     };
 
+    private static final int DELAY = 800; // delay between letter spawns in ms
     private final Random random = new Random();
     private final Timer spawnTimer;
     private Timer fadeTimer = null;
@@ -36,13 +44,23 @@ public class AlphabetSoup extends BaseMiniGame {
     private List<GameLetter> activeLetters = new ArrayList<>();
     private int attempts = 0;
 
+    /**
+     * Constructor for AlphabetSoup mini-game.
+     * 
+     * @param runner          Reference to the main GameRunner for callbacks and
+     *                        shared data access
+     * @param isHardMode      Flag to determine if the game should be in hard mode
+     *                        (multiple letters/colors) or easy mode (single
+     *                        letter/color)
+     * @param durationSeconds Duration of the game session in seconds, after which
+     *                        the game will end and show results
+     */
     public AlphabetSoup(GameRunner runner, boolean isHardMode, int durationSeconds) {
         super(runner, isHardMode, durationSeconds);
 
         this.isHardMode = isHardMode;
         this.customFont = ResourceLoader.loadFont("soupFont.ttf", 120f);
-        // delay between letters (ms)
-        spawnTimer = new Timer(800, e -> spawnNewLetter());
+        spawnTimer = new Timer(DELAY, e -> spawnNewLetter());
         spawnTimer.setRepeats(false);
 
         // Timer for the fade-in animation (ms)
@@ -56,7 +74,7 @@ public class AlphabetSoup extends BaseMiniGame {
         });
 
         setupKeyListener();
-        // add listener to spawn first letter once we have dimensions to work with
+        // add listener to spawn first letter once we have window dimensions
         this.addAncestorListener(new javax.swing.event.AncestorListener() {
             @Override
             public void ancestorAdded(javax.swing.event.AncestorEvent event) {
@@ -76,6 +94,9 @@ public class AlphabetSoup extends BaseMiniGame {
         });
     }
 
+    /**
+     * Sets up the key listener for the game.
+     */
     private void setupKeyListener() {
         this.addKeyListener(new KeyAdapter() {
             @Override
@@ -88,6 +109,9 @@ public class AlphabetSoup extends BaseMiniGame {
         });
     }
 
+    /**
+     * Spawns a new letter on the screen.
+     */
     private void spawnNewLetter() {
         activeLetters.clear();
         isWaiting = false;
@@ -129,6 +153,12 @@ public class AlphabetSoup extends BaseMiniGame {
         fadeTimer.start();
     }
 
+    /**
+     * Handles the input from the user.
+     * Logic checks if the pressed key matches the active letter.
+     * 
+     * @param input The input character.
+     */
     @Override
     public void handleInput(Object input) {
         char pressed = (char) input;
@@ -158,6 +188,11 @@ public class AlphabetSoup extends BaseMiniGame {
         repaint();
     }
 
+    /**
+     * Paints the component.
+     *
+     * @param g The graphics context.
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -192,6 +227,12 @@ public class AlphabetSoup extends BaseMiniGame {
         }
     }
 
+    /**
+     * Gets a random location for a new letter.
+     * Avoids overlapping with the score, timer, and other letters.
+     * 
+     * @return A point representing the random location within the window.
+     */
     private Point getRandomLocation() {
         int maxAttempts = 100;
         int margin = 120; // Distance between letters
@@ -228,6 +269,9 @@ public class AlphabetSoup extends BaseMiniGame {
         return new Point(getWidth() / 2, 200); // fall back if can't find spot after maxAttempts
     }
 
+    /**
+     * Resets the game to its initial state.
+     */
     @Override
     public void resetGame() {
         spawnTimer.stop();
@@ -235,7 +279,10 @@ public class AlphabetSoup extends BaseMiniGame {
         spawnNewLetter();
     }
 
-    private class GameLetter {
+    /**
+     * Class representing a letter in the game, with a position and colour.
+     */
+    private static class GameLetter {
         char character;
         Point position;
         Color color;
@@ -247,6 +294,10 @@ public class AlphabetSoup extends BaseMiniGame {
         }
     }
 
+    /**
+     * Stops the game and its timers, then notifies the GameRunner of the session
+     * end.
+     */
     @Override
     protected void stopSpecificTimers() {
         if (spawnTimer != null)

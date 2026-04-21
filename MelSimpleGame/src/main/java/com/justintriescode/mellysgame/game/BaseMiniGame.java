@@ -7,9 +7,9 @@ import javax.swing.Timer;
 
 import com.justintriescode.mellysgame.model.Playable;
 import com.justintriescode.mellysgame.ui.GameRunner;
-import com.justintriescode.mellysgame.game.GameSession;
 import com.justintriescode.mellysgame.ui.UIStyleUtils;
 
+import com.justintriescode.mellysgame.events.Observer;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -22,7 +22,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Window;
 
-public abstract class BaseMiniGame extends JPanel implements Playable {
+public abstract class BaseMiniGame extends JPanel implements Playable, Observer<GameSession> {
     protected GameRunner runner;
     protected GameSession session;
     protected String statusMessage = "";
@@ -35,7 +35,8 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
         this.hardMode = hardMode;
         this.setBackground(new Color(45, 45, 45));
         this.setFocusable(true);
-        this.session = new GameSession(new PlayerProfile(), durationSeconds, this::handleGameOver, this);
+        this.session = new GameSession(new PlayerProfile(), durationSeconds, this::handleGameOver);
+        this.session.addObserver(this);
 
         // escape key to return to menu
         this.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), "openPauseMenu");
@@ -51,6 +52,11 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
             repaint();
         });
         messageTimer.setRepeats(false);
+    }
+
+    @Override
+    public void onUpdate(GameSession session) {
+        repaint();
     }
 
     protected void handleGameOver() {
@@ -103,6 +109,7 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
     public void stopGame() {
         isGameRunning = false;
         if (session != null) {
+            session.removeObserver(this);
             session.abort();
         }
 
@@ -154,5 +161,20 @@ public abstract class BaseMiniGame extends JPanel implements Playable {
         if (this.isDisplayable()) {
             session.resumeTimer();
         }
+    }
+
+    /**
+     * Stops all timers and removes observers if the panel is removed from the
+     * screen.
+     */
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if (session != null) {
+            session.removeObserver(this);
+        }
+        if (messageTimer != null)
+            messageTimer.stop();
+        stopSpecificTimers();
     }
 }

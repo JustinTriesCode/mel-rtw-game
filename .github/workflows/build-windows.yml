@@ -29,6 +29,7 @@ jobs:
         run: |
           jpackage --type exe `
             --win-console `
+            --win-upgrade-uuid "794e7722-1d51-411a-9694-8178c7438c71" `
             --input target `
             --dest dist `
             --name "MellyMinigames" `

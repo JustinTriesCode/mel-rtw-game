@@ -8,8 +8,15 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.justintriescode.mellysgame.data.SessionRecord;
+import com.justintriescode.mellysgame.events.Observable;
 
-public class PlayerProfile {
+/**
+ * Represents the persistent profile and statistics of a player.
+ * This class tracks lifetime scores, play time, daily history,
+ * and individual session records. It is serialized and deserialized
+ * using Jackson for saving and loading player data.
+ */
+public class PlayerProfile extends Observable<PlayerProfile> {
     private int totalSessionsPlayed = 0;
     private int totalLifetimeScore;
     private int totalLifetimeSeconds;
@@ -20,29 +27,12 @@ public class PlayerProfile {
     private int topScore = 0;
     private Map<LocalDate, Integer> dailyHistory = new HashMap<>();
 
-    // EFFECTS: Logic to update stats
-    public void updateStats(int sessionScore) {
-        this.totalLifetimeScore += sessionScore;
-        LocalDate today = LocalDate.now();
-        dailyHistory.put(today, dailyHistory.getOrDefault(today, 0) + sessionScore);
-
-        // Check for new top score
-        if (sessionScore > topScore) {
-            this.topScore = sessionScore;
-            // TODO: prompt for name input and update topScorerName somewhere in the ui
-        }
-    }
-
-    public void recordSession(int sessionScore, long sessionSeconds) {
-        this.totalSessionsPlayed++;
-        this.totalLifetimeScore += sessionScore;
-        this.totalLifetimeSeconds += sessionSeconds;
-
-        LocalDate today = LocalDate.now();
-        int currentDayTotal = dailyHistory.getOrDefault(today, 0);
-        dailyHistory.put(today, currentDayTotal + sessionScore);
-    }
-
+    /**
+     * Calculates the average score across all played sessions.
+     * This field is ignored by Jackson during JSON serialization.
+     *
+     * @return The average score, or 0.0 if no sessions have been played.
+     */
     @JsonIgnore
     public double getAverageScorePerSession() {
         if (totalSessionsPlayed == 0)
@@ -50,16 +40,12 @@ public class PlayerProfile {
         return (double) totalLifetimeScore / totalSessionsPlayed;
     }
 
+    /**
+     * Increments the total lifetime seconds played by one.
+     */
     public void increaseLifetimeSeconds() {
         this.totalLifetimeSeconds++;
     }
-
-    public void increaseLifetimeScore(int points) {
-        this.totalLifetimeScore += points;
-    }
-
-    // TODO: add any missing getters and Setters (Jackson needs these or public
-    // fields)
 
     // Getters and setters
     public int getTotalLifetimeScore() {
@@ -121,6 +107,17 @@ public class PlayerProfile {
     // session data
     private List<SessionRecord> sessionHistory = new ArrayList<>();
 
+    /**
+     * Records the full context of a completed game session and updates all relevant
+     * statistics,
+     * including total sessions, lifetime score, session history, daily history, and
+     * top score.
+     *
+     * @param game     The name of the mini-game played.
+     * @param severity The recorded symptom severity during the session.
+     * @param hard     True if the session was played on hard mode, false otherwise.
+     * @param score    The final score achieved in the session.
+     */
     public void recordSessionContext(String game, String severity, boolean hard, int score) {
         this.totalSessionsPlayed++;
         this.totalLifetimeScore += score;
@@ -128,6 +125,11 @@ public class PlayerProfile {
 
         LocalDate today = LocalDate.now();
         dailyHistory.put(today, dailyHistory.getOrDefault(today, 0) + score);
+
+        if (score > topScore) {
+            this.topScore = score;
+            notifyObservers(this);
+        }
     }
 
     public List<SessionRecord> getSessionHistory() {

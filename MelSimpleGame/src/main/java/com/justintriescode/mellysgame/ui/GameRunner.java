@@ -165,7 +165,6 @@ public class GameRunner extends JFrame {
                 this.currentSymptomSeverity,
                 isHard,
                 score);
-        playerProfile.recordSessionContext(gameName, currentSymptomSeverity, isHard, score);
         try {
             DataManager.save(playerProfile);
         } catch (IOException e) {
