@@ -8,8 +8,20 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Random;
+import com.justintriescode.mellysgame.events.Event;
+import com.justintriescode.mellysgame.events.EventLog;
 
+/**
+ * Represents the Equationista mini-game where players select the smallest value
+ * from a set of equations.
+ * Players use arrow keys (or WASD) to select the direction corresponding to the
+ * smallest value.
+ * The game features a dynamic difficulty system that adjusts the range of
+ * generated equations based on player performance.
+ */
 public class Equationista extends BaseMiniGame {
+    private int THRESHOLD = 80; // threshold used for when to reset equations
+    private int difficultyIncreases = 0;
     private boolean hardMode = false;
     private HashMap<String, Equation> optionsMap = new HashMap<>();
     private int max = 100;
@@ -17,12 +29,21 @@ public class Equationista extends BaseMiniGame {
     private int attemptsThisRound = 0;
     private Random random = new Random();
     private int cycleCount = 0;
+    private int triesThisCycleCount = 0;
     private int targetCycleCount;
     private static final double HARD_MODE_SCALE = 2.0;
     private static final double EASY_MODE_SCALE = 0.42;
 
-    // EFFECTS: initializes the game, sets up key bindings, and starts the game
-    // session timer
+    /**
+     * Initializes the game, sets up key bindings, and starts the game session
+     * timer.
+     *
+     * @param runner          The GameRunner instance for screen navigation and
+     *                        shared state.
+     * @param hardMode        True if hard mode is enabled, false for easy mode.
+     * @param maxRange        The maximum value range for generated equations.
+     * @param durationSeconds The duration of the session in seconds.
+     */
     public Equationista(GameRunner runner, boolean hardMode, int maxRange, int durationSeconds) {
         super(runner, hardMode, durationSeconds);
 
@@ -34,12 +55,15 @@ public class Equationista extends BaseMiniGame {
 
         // Initialize the HashMap with arrow directions and corresponding equations
         updateOptions();
-        keyListener(runner);
+        keyListener();
         resizeImg(1);
     }
 
-    // Layout buttons to represent arrow directions (Up, Down, Left, Right)
-    private void keyListener(GameRunner runner) {
+    /**
+     * Lays out key listeners to represent arrow directions (Up, Down, Left, Right)
+     * and WASD.
+     */
+    private void keyListener() {
         this.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
@@ -56,28 +80,34 @@ public class Equationista extends BaseMiniGame {
         });
     }
 
-    // EFFECTS: resizes the arrow keys image based on the given scale factor
+    /**
+     * Resizes the arrow keys image based on the given scale factor.
+     *
+     * @param scale The factor by which to scale the image.
+     */
     public void resizeImg(double scale) {
         BufferedImage original = ResourceLoader.loadImage("arrowKeys.png");
 
         if (original == null) {
-            System.err.println("CRITICAL: Could not find arrowKeys.png at the specified path!");
+            EventLog.getInstance().addEvent(new Event("CRITICAL: Could not find arrowKeys.png at the specified path!"));
             return;
         }
 
         int w = (int) (original.getWidth() * scale);
         int h = (int) (original.getHeight() * scale);
-        if (original != null) {
-            Image scaled = original.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+        Image scaled = original.getScaledInstance(w, h, Image.SCALE_SMOOTH);
 
-            this.arrowImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2d = this.arrowImage.createGraphics();
-            g2d.drawImage(scaled, 0, 0, null);
-            g2d.dispose();
-        }
+        this.arrowImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = this.arrowImage.createGraphics();
+        g2d.drawImage(scaled, 0, 0, null);
+        g2d.dispose();
     }
 
-    // EFFECTS: paints the game screen with the arrow image and equations
+    /**
+     * Paints the game screen with the arrow image and equations.
+     *
+     * @param g The graphics context used for painting.
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -91,7 +121,11 @@ public class Equationista extends BaseMiniGame {
         drawTimer(g2);
     }
 
-    // EFFECTS: helper to draw the main game assets (arrow image and equations)
+    /**
+     * Helper to draw the main game assets (arrow image and equations).
+     *
+     * @param g2 The Graphics2D context.
+     */
     private void drawGameAssets(Graphics2D g2) {
         int centerX = getWidth() / 2;
         int centerY = getHeight() / 2;
@@ -118,13 +152,25 @@ public class Equationista extends BaseMiniGame {
         drawCenteredString(g2, "Right", x + imgW + padding * 3, centerY + (imgH / 3));
     }
 
-    // EFFECTS: helper to clean text for paintComponent
+    /**
+     * Helper to safely retrieve the text of an equation for the paintComponent.
+     *
+     * @param direction The direction corresponding to the equation.
+     * @return The string representation of the equation, or "?" if missing.
+     */
     private String getEqText(String direction) {
         Equation eq = optionsMap.get(direction);
         return (eq != null) ? eq.toString() : "?";
     }
 
-    // EFFECTS: helper to draw centered text for paintComponent
+    /**
+     * Helper to draw centered text for paintComponent.
+     *
+     * @param g2        The Graphics2D context.
+     * @param direction The direction corresponding to the equation text to draw.
+     * @param targetX   The target X coordinate for the center of the string.
+     * @param targetY   The target Y coordinate for the baseline of the string.
+     */
     private void drawCenteredString(Graphics2D g2, String direction, int targetX, int targetY) {
         String text = getEqText(direction);
         FontMetrics metrics = g2.getFontMetrics();
@@ -132,7 +178,11 @@ public class Equationista extends BaseMiniGame {
         g2.drawString(text, targetX - (textWidth / 2), targetY);
     }
 
-    // EFFECTS: draws the cycle count left on the screen
+    /**
+     * Draws the remaining cycle count left on the screen.
+     *
+     * @param g2 The Graphics2D context.
+     */
     private void drawCycleLeft(Graphics2D g2) {
         simpleFontSetting(g2);
 
@@ -144,7 +194,11 @@ public class Equationista extends BaseMiniGame {
         g2.drawString(cycleText, x, y);
     }
 
-    // EFFECTS: sets difficulty by adjusting max values for random generation
+    /**
+     * Sets difficulty by adjusting max values for random generation.
+     *
+     * @param mode True for hard mode, false for easy mode.
+     */
     public void setDifficulty(boolean mode) {
         this.hardMode = mode;
         if (hardMode) {
@@ -155,7 +209,9 @@ public class Equationista extends BaseMiniGame {
         resetGame();
     }
 
-    // EFFECTS: resets the game state for a new session
+    /**
+     * Resets the game state for a new session.
+     */
     @Override
     public void resetGame() {
         cycleCount = 0;
@@ -165,22 +221,33 @@ public class Equationista extends BaseMiniGame {
         repaint();
     }
 
-    // EFFECTS: increases difficulty by 10
+    /**
+     * Increases the difficulty by expanding the maximum range by 10.
+     */
     public void increaseDifficulty() {
         max += 10;
+        difficultyIncreases++;
     }
 
-    // EFFECTS: decreases difficulty, ensuring it doesn't go below 10
+    /**
+     * Decreases the difficulty by shrinking the maximum range, ensuring it doesn't
+     * go below 10.
+     */
     public void decreaseDifficulty() {
         max = Math.max(10, max - 10);
+        difficultyIncreases = Math.max(0, difficultyIncreases - 1);
     }
 
-    // EFFECTS: resets difficulty to default
+    /**
+     * Resets the difficulty constraints to their default values.
+     */
     public void resetDifficulty() {
         max = 100;
     }
 
-    // EFFECTS: generates new equations for all directions
+    /**
+     * Generates and assigns new equations for all directions.
+     */
     public void updateOptions() {
         optionsMap.put("Up", generateNewEquation());
         optionsMap.put("Down", generateNewEquation());
@@ -189,14 +256,22 @@ public class Equationista extends BaseMiniGame {
         repaint();
     }
 
-    // EFFECTS: generates a new equation for a single direction
+    /**
+     * Generates a new equation for a single specified direction.
+     *
+     * @param direction The direction to refresh (e.g., "Up", "Left").
+     */
     public void refreshDirection(String direction) {
         optionsMap.put(direction, generateNewEquation());
         repaint();
     }
 
-    // EFFECTS: generates a new equation, ensuring it's not a duplicate of existing
-    // options
+    /**
+     * Generates a new equation, ensuring it evaluates to a unique value
+     * compared to existing options currently on the board.
+     *
+     * @return The newly generated, unique Equation.
+     */
     public Equation generateNewEquation() {
         Equation newEq;
         boolean isDuplicate;
@@ -214,13 +289,25 @@ public class Equationista extends BaseMiniGame {
         return newEq;
     }
 
-    // EFFECTS: handles user input, checks if the selected direction is correct,
-    // updates score and status message
+    /**
+     * Handles user input, checks if the selected direction has the smallest value,
+     * and updates the score and status message accordingly.
+     *
+     * @param input An Object representing the direction chosen (must be a String).
+     */
     @Override
     public void handleInput(Object input) {
         String direction = (String) input;
         if (!optionsMap.containsKey(direction))
             return;
+
+        // Check if the board is stale before processing the input
+        if (isBoardStale()) {
+            statusMessage = "Resetting the board!";
+            messageTimer.restart();
+            updateOptions();
+            return;
+        }
 
         String targetDir = "Up";
         int lowestValue = Integer.MAX_VALUE;
@@ -241,6 +328,7 @@ public class Equationista extends BaseMiniGame {
             checkResetCondition(cycleCount++);
         } else {
             attemptsThisRound++;
+            triesThisCycleCount++;
             statusMessage = "Try again.";
             messageTimer.restart();
         }
@@ -248,28 +336,60 @@ public class Equationista extends BaseMiniGame {
         repaint();
     }
 
-    // EFFECTRS: checks if all equations are above a certain threshold to trigger a
-    // reset
+    /**
+     * Checks if all equations are above a certain threshold or if the cycle count
+     * has been met, triggering a milestone and board reset if necessary.
+     *
+     * @param cycleCount The current cycle count.
+     */
     private void checkResetCondition(int cycleCount) {
-        boolean allHigh = true;
-        int threshold = 80;
-
-        for (Equation eq : optionsMap.values()) {
-            if (eq.evaluate() < threshold) {
-                allHigh = false;
-                break;
-            }
-        }
-        if (allHigh) {
-            statusMessage = "You've gotten all options above " + threshold + ". Great work! Now randomizing options.";
+        if (isBoardStale()) {
+            statusMessage = "You've gotten all options above " + THRESHOLD + ". Great work! Now randomizing options.";
             updateOptions();
-        } else if (cycleCount >= targetCycleCount) {
+        }
+        if (cycleCount >= targetCycleCount) {
             statusMessage = "Correct! " + cycleCount + " cycle(s) completed. Now randomizing options.";
+            dynamicDifficulty();
+            triesThisCycleCount = 0;
             targetCycleCount = updateTargetCycleCount();
             double multiplier = hardMode ? HARD_MODE_SCALE : EASY_MODE_SCALE;
             session.processMilestone(multiplier, cycleCount);
             this.cycleCount = 0;
             updateOptions();
+        }
+
+    }
+
+    /**
+     * Checks if all equations on the board are above a certain threshold.
+     *
+     * @return true if the board is considered stale, false otherwise.
+     */
+    private boolean isBoardStale() {
+        if (optionsMap.values().size() < 4)
+            return false; // Don't check when the board isn't fully initialized
+
+        for (Equation eq : optionsMap.values()) {
+            if (eq != null && eq.evaluate() < THRESHOLD) {
+                return false; // low value found so not stale
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Adjusts the difficulty dynamically based on the player's performance:
+     * - If player gets all answers correct for the target cycle count, increase
+     * difficulty.
+     * - If player struggles (e.g., reaches 3x the target cycle count in attempts),
+     * decrease difficulty.
+     */
+    public void dynamicDifficulty() {
+        if (triesThisCycleCount <= 0) {
+            increaseDifficulty();
+            session.processPerfectionBonus(difficultyIncreases);
+        } else if (triesThisCycleCount >= targetCycleCount * 2) {
+            decreaseDifficulty();
         }
     }
 
