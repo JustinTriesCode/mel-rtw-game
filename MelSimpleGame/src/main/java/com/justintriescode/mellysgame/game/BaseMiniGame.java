@@ -35,7 +35,7 @@ public abstract class BaseMiniGame extends JPanel implements Playable, Observer<
         this.hardMode = hardMode;
         this.setBackground(new Color(45, 45, 45));
         this.setFocusable(true);
-        this.session = new GameSession(new PlayerProfile(), durationSeconds, this::handleGameOver);
+        this.session = new GameSession(runner.getPlayerProfile(), durationSeconds, this::handleGameOver);
         this.session.addObserver(this);
 
         // escape key to return to menu
@@ -60,7 +60,7 @@ public abstract class BaseMiniGame extends JPanel implements Playable, Observer<
     }
 
     protected void handleGameOver() {
-        runner.showGameOver(session.getSessionScore(), session.getStreak());
+        stopGame();
     }
 
     // Shared UI helpers

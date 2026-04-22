@@ -7,41 +7,78 @@ import com.justintriescode.mellysgame.data.DataManager;
 import com.justintriescode.mellysgame.game.AlphabetSoup;
 import com.justintriescode.mellysgame.game.BaseMiniGame;
 import com.justintriescode.mellysgame.game.PlayerProfile;
+import com.justintriescode.mellysgame.events.Event;
+import com.justintriescode.mellysgame.events.EventLog;
 
 import java.awt.*;
 import java.io.IOException;
 
+/**
+ * The UI container for the application.
+ * Manages screen transitions, dialogs, and the lifecycle of game sessions.
+ */
 public class GameRunner extends JFrame {
+    private static final int WIDTH = 1200;
+    private static final int HEIGHT = 800;
     private CardLayout layout = new CardLayout();
     private JPanel mainContainer = new JPanel(layout);
     private String currentSymptomSeverity;
     private PlayerProfile playerProfile;
 
+    /**
+     * Initializes the GameRunner, sets up the main window, loads the player
+     * profile,
+     * and prompts the user for their current symptom severity.
+     */
     public GameRunner() {
         setTitle("Melly's Minimalist Minigames");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1200, 800);
+        setSize(WIDTH, HEIGHT);
+
+        getRootPane().putClientProperty("apple.awt.fullscreenable", true);
         this.playerProfile = DataManager.load();
+
+        Image appIcon = com.justintriescode.mellysgame.ui.ResourceLoader.loadImage("app_icon.png");
+        if (appIcon != null) {
+            setIconImage(appIcon);
+        }
+
+        // Register GameRunner to listen for High Score events from the PlayerProfile
+        this.playerProfile.addObserver(profile -> {
+            JOptionPane.showMessageDialog(this,
+                    "Amazing! You set a new High Score of " + profile.getTopScore() + "!",
+                    "New High Score!",
+                    JOptionPane.PLAIN_MESSAGE);
+        });
 
         mainContainer.add(new MenuPanel(this), "MENU");
         add(mainContainer);
         setLocationRelativeTo(null);
         setVisible(true);
-        // trigger the symptom popup right after the UI is visible
+        // trigger the symptom popup after the UI is visible
         SwingUtilities.invokeLater(() -> promptForSymptom());
     }
 
+    /**
+     * Gets the currently loaded player profile.
+     *
+     * @return The active {@link PlayerProfile}.
+     */
     public PlayerProfile getPlayerProfile() {
         return playerProfile;
     }
 
+    /**
+     * Prompts the user to select their current symptom severity before playing.
+     * Saves the selection to the player profile.
+     */
     private void promptForSymptom() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
 
         ButtonGroup group = new ButtonGroup();
-        String[] options = { "Mild", "Moderate", "Severe" };
+        String[] options = { "None", "Mild", "Moderate", "Severe" };
         JRadioButton[] buttons = new JRadioButton[options.length];
 
         for (int i = 0; i < options.length; i++) {
@@ -65,11 +102,20 @@ public class GameRunner extends JFrame {
             try {
                 com.justintriescode.mellysgame.data.DataManager.save(this.playerProfile);
             } catch (IOException e) {
-                // Add error handling or logging here if needed
+                EventLog.getInstance().addEvent(new Event("Failed to save player profile after symptom selection", e));
             }
         });
     }
 
+    /**
+     * Displays a customized, undecorated modal dialog with the given content.
+     *
+     * @param title     The title to display at the top of the dialog.
+     * @param content   The JPanel containing the custom content for the dialog
+     *                  body.
+     * @param onConfirm A Runnable callback to execute when the "Confirm" button is
+     *                  clicked.
+     */
     public void showGenericDialog(String title, JPanel content, Runnable onConfirm) {
         JDialog dialog = new JDialog(this, true);
         dialog.setUndecorated(true);
@@ -99,13 +145,25 @@ public class GameRunner extends JFrame {
         dialog.setVisible(true);
     }
 
-    // Getter so your GameSession or MiniGames can grab the value for scoring/stats
+    /**
+     * Gets the currently selected symptom severity.
+     * Useful for scoring or statistics tracking in game sessions.
+     *
+     * @return The current symptom severity as a string.
+     */
     public String getCurrentSymptomSeverity() {
         return currentSymptomSeverity;
     }
 
-    // EFFECTS: starts a new game session with the specified difficulty and
-    // duration, and switches to the game screen
+    /**
+     * Starts a new game session with the specified difficulty and duration,
+     * and switches the view to the new game screen.
+     *
+     * @param gameType        The name of the mini-game to start (e.g.,
+     *                        "Equationista").
+     * @param hardMode        True to enable hard mode, false for easy mode.
+     * @param durationSeconds The duration of the game session in seconds.
+     */
     public void startGame(String gameType, boolean hardMode, int durationSeconds) {
 
         BaseMiniGame newGame;
@@ -137,11 +195,23 @@ public class GameRunner extends JFrame {
         });
     }
 
-    // EFFECTS: switches to the specified screen by name
+    /**
+     * Switches the main container to display the specified screen.
+     *
+     * @param name The name identifier of the screen to show (e.g., "MENU",
+     *             "GAME_SESSION").
+     */
     public void showScreen(String name) {
         layout.show(mainContainer, name);
     }
 
+    /**
+     * Displays the game over dialog with the final score and streak,
+     * then returns to the main menu upon confirmation.
+     *
+     * @param score  The final score achieved in the session.
+     * @param streak The longest streak achieved in the session.
+     */
     public void showGameOver(int score, int streak) {
         JPanel statsPanel = new JPanel(new GridLayout(2, 1));
         statsPanel.setOpaque(false);
@@ -159,6 +229,16 @@ public class GameRunner extends JFrame {
         });
     }
 
+    /**
+     * Handles the end of a game session by recording the context to the player
+     * profile,
+     * saving the data, and triggering the game over screen.
+     *
+     * @param gameName The name of the mini-game that just ended.
+     * @param isHard   True if the game was played on hard mode, false otherwise.
+     * @param score    The final score achieved in the session.
+     * @param streak   The longest streak achieved in the session.
+     */
     public void handleSessionEnd(String gameName, boolean isHard, int score, int streak) {
         playerProfile.recordSessionContext(
                 gameName,
@@ -168,8 +248,19 @@ public class GameRunner extends JFrame {
         try {
             DataManager.save(playerProfile);
         } catch (IOException e) {
-            e.printStackTrace();
+            EventLog.getInstance().addEvent(new Event("Failed to save player profile after session end", e));
         }
         showGameOver(score, streak);
+    }
+
+    /**
+     * Toggles the game window between windowed and maximized full screen.
+     */
+    public void toggleFullScreen() {
+        if (getExtendedState() == JFrame.MAXIMIZED_BOTH) {
+            setExtendedState(JFrame.NORMAL);
+        } else {
+            setExtendedState(JFrame.MAXIMIZED_BOTH);
+        }
     }
 }

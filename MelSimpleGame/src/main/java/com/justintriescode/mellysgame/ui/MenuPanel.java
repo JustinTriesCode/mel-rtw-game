@@ -3,47 +3,68 @@ package com.justintriescode.mellysgame.ui;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * The main menu screen of the application.
+ * Displays game selection buttons and allows the player to configure
+ * session settings such as game duration.
+ */
 public class MenuPanel extends JPanel {
     private int selectedSeconds = 1 * 60; // Defaults to 1 minute
 
+    /**
+     * Constructs the MenuPanel, initializing the layout, game buttons,
+     * and configuration toggles.
+     *
+     * @param runner The main GameRunner instance used for screen transitions and
+     *               starting games.
+     */
     public MenuPanel(GameRunner runner) {
-        setBackground(new Color(210, 210, 200));
+        setBackground(UIStyleUtils.BG_COLOR);
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-        JPanel buttonWrapper = new JPanel(new GridLayout(3, 1, 15, 15));
-        buttonWrapper.setBackground(new Color(210, 210, 200));
+        JPanel gamesGrid = new JPanel(new GridLayout(4, 1, 15, 15));
+        gamesGrid.setBackground(UIStyleUtils.BG_COLOR);
 
         JLabel title = new JLabel("Melly's Minimalist Minigames", SwingConstants.CENTER);
-        title.setForeground(new Color(90, 90, 90));
+        title.setForeground(UIStyleUtils.TEXT_DARK);
         title.setFont(new Font("Serif", Font.BOLD, 58));
 
         JButton game1EasyBtn = new JButton("Letter Soup");
         JButton game1HardBtn = new JButton("Alphabet Soup");
         JButton game2EasyBtn = new JButton("Numberista");
         JButton game2HardBtn = new JButton("Equationista");
+        JButton statsBtn = new JButton("View Player Stats");
 
-        UIStyleUtils.formatButton(game1EasyBtn, 42);
-        UIStyleUtils.formatButton(game1HardBtn, 42);
-        UIStyleUtils.formatButton(game2EasyBtn, 42);
-        UIStyleUtils.formatButton(game2HardBtn, 42);
+        UIStyleUtils.formatButton(game1EasyBtn, UIStyleUtils.MENU_FONT_SIZE);
+        UIStyleUtils.formatButton(game1HardBtn, UIStyleUtils.MENU_FONT_SIZE);
+        UIStyleUtils.formatButton(game2EasyBtn, UIStyleUtils.MENU_FONT_SIZE);
+        UIStyleUtils.formatButton(game2HardBtn, UIStyleUtils.MENU_FONT_SIZE);
+        UIStyleUtils.formatButton(statsBtn, 28);
 
-        // Game 1
+        // Game 1: Letter Games
         game1EasyBtn.addActionListener(e -> runner.startGame("AlphabetSoup", false, selectedSeconds));
         game1HardBtn.addActionListener(e -> runner.startGame("AlphabetSoup", true, selectedSeconds));
-        // Game 2
+        // Game 2: Number Games
         game2EasyBtn.addActionListener(e -> runner.startGame("Equationista", false, selectedSeconds));
         game2HardBtn.addActionListener(e -> runner.startGame("Equationista", true, selectedSeconds));
+        // Stats
+        statsBtn.addActionListener(e -> showStatsDialog(runner));
 
-        buttonWrapper.add(game1EasyBtn);
-        buttonWrapper.add(game1HardBtn);
-        buttonWrapper.add(game2EasyBtn);
-        buttonWrapper.add(game2HardBtn);
+        gamesGrid.add(game1EasyBtn);
+        gamesGrid.add(game1HardBtn);
+        gamesGrid.add(game2EasyBtn);
+        gamesGrid.add(game2HardBtn);
+
+        JPanel buttonWrapper = new JPanel(new BorderLayout(0, 40));
+        buttonWrapper.setBackground(UIStyleUtils.BG_COLOR);
+        buttonWrapper.add(gamesGrid, BorderLayout.CENTER);
+        buttonWrapper.add(statsBtn, BorderLayout.SOUTH);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2; // Span across both columns
-        gbc.insets = new Insets(0, 0, 50, 0); // Big gap under title
+        gbc.insets = new Insets(0, 0, 50, 0);
         this.add(title, gbc);
 
         // Add Button List in the center-left
@@ -53,27 +74,48 @@ public class MenuPanel extends JPanel {
         gbc.insets = new Insets(0, 0, 0, 0);
         this.add(buttonWrapper, gbc);
 
-        // Add Toggle to the right of the buttons
+        // Container for the timer toggle and Quit button
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.setBackground(UIStyleUtils.BG_COLOR);
+        rightPanel.add(createTimeToggle(), BorderLayout.NORTH);
+
+        JButton quitBtn = new JButton("Quit Game");
+        UIStyleUtils.formatButton(quitBtn, 24);
+        quitBtn.addActionListener(e -> System.exit(0));
+
+        JPanel quitWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        quitWrapper.setBackground(UIStyleUtils.BG_COLOR);
+        quitWrapper.add(quitBtn);
+        rightPanel.add(quitWrapper, BorderLayout.SOUTH);
+
         gbc.gridx = 1;
         gbc.gridy = 1;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.insets = new Insets(0, 50, 0, 0); // Gap between buttons and toggle
-        this.add(createTimeToggle(), gbc);
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        gbc.insets = new Insets(0, 50, 0, 0);
+        this.add(rightPanel, gbc);
     }
 
-    //TODO
-    // create menu option to view stats
-    // private void createStatsBtn() {
-    //     // Placeholder for stats display
-    //     JOptionPane.showMessageDialog(this, "WIP", "Player Stats",
-    //             JOptionPane.INFORMATION_MESSAGE);
-    // }
+    /**
+     * Opens a dialog displaying the player's lifetime statistics.
+     *
+     * @param runner The GameRunner instance holding the player profile.
+     */
+    private void showStatsDialog(GameRunner runner) {
+        StatsPanel statsPanel = new StatsPanel(runner);
+        runner.showGenericDialog("Player Statistics", statsPanel, () -> {
+        });
+    }
 
-    // EFFECTS: creates a panel with radio buttons to select game duration
+    /**
+     * Creates a panel containing radio buttons to select the game duration.
+     *
+     * @return A JPanel configured with timer selection options.
+     */
     private JPanel createTimeToggle() {
         JPanel togglePanel = new JPanel();
         togglePanel.setLayout(new BoxLayout(togglePanel, BoxLayout.Y_AXIS));
-        togglePanel.setBackground(new Color(210, 210, 200));
+        togglePanel.setBackground(UIStyleUtils.BG_COLOR);
 
         JRadioButton oneMinBtn = new JRadioButton("1 Minute Session", true);
         JRadioButton twoMinBtn = new JRadioButton("2 Minute Session", false);
@@ -100,11 +142,16 @@ public class MenuPanel extends JPanel {
         return togglePanel;
     }
 
-    // Helper to keep radio buttons looking consistent with your theme
+    /**
+     * Helper method to format radio buttons consistently with the application's
+     * theme.
+     *
+     * @param btn The JRadioButton to format.
+     */
     private void formatRadioButton(JRadioButton btn) {
         btn.setFont(new Font("Serif", Font.PLAIN, 18));
-        btn.setForeground(new Color(90, 90, 90));
-        btn.setBackground(new Color(210, 210, 200));
+        btn.setForeground(UIStyleUtils.TEXT_DARK);
+        btn.setBackground(UIStyleUtils.BG_COLOR);
         btn.setFocusPainted(false);
     }
 }
