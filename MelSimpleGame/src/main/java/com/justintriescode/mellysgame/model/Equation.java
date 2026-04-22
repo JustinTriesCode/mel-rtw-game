@@ -48,7 +48,8 @@ public class Equation {
     @Override
     public String toString() {
         if (type == EquationType.SIMPLE) {
-            return Integer.toString(value1);
+            // Pad simple numbers to at least 3 digits to prevent visual length exploits
+            return String.format("%03d", value1);
         } else {
             return value1 + " " + operator + " " + value2;
         }

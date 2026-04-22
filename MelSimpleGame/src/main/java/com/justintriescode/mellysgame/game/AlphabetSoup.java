@@ -173,7 +173,7 @@ public class AlphabetSoup extends BaseMiniGame {
         }
 
         if (foundCorrect) {
-            int diffMult = isHardMode ? 3 : 1;
+            double diffMult = isHardMode ? 3.0 : 1.6; // Increased from 1.0 to balance easy score near 1300
             int speedBonus = (alpha < 0.5f) ? 5 : 0;
 
             attempts = 0;

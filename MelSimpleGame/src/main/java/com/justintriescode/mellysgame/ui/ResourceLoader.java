@@ -12,6 +12,9 @@ import java.awt.image.BufferedImage;
  * A utility class for loading resources such as images and fonts.
  */
 public class ResourceLoader {
+    private static final String IMAGE_PATH = "/images/";
+    private static final String ICON_PATH = "/icons/";
+    private static final String FONT_PATH = "/fonts/";
 
     /**
      * Load an image from res/images
@@ -21,7 +24,7 @@ public class ResourceLoader {
      */
     public static BufferedImage loadImage(String fileName) {
         try {
-            return ImageIO.read(ResourceLoader.class.getResourceAsStream("/images/" + fileName));
+            return ImageIO.read(ResourceLoader.class.getResourceAsStream(IMAGE_PATH + fileName));
         } catch (Exception e) {
             EventLog.getInstance().addEvent(new Event("Failed to load image: " + fileName, e));
             return null;
@@ -36,9 +39,9 @@ public class ResourceLoader {
      */
     public static ImageIcon loadIcon(String fileName) {
         try {
-            java.net.URL resource = ResourceLoader.class.getResource("/icons/" + fileName);
+            java.net.URL resource = ResourceLoader.class.getResource(ICON_PATH + fileName);
             if (resource == null) {
-                EventLog.getInstance().addEvent(new Event("CRITICAL: Icon not found at /icons/" + fileName));
+                EventLog.getInstance().addEvent(new Event("CRITICAL: Icon not found at " + ICON_PATH + fileName));
                 return new ImageIcon();
             }
             BufferedImage img = ImageIO.read(resource);
@@ -80,7 +83,7 @@ public class ResourceLoader {
     public static Font loadFont(String fileName, float size) {
         try {
             return Font.createFont(Font.TRUETYPE_FONT,
-                    ResourceLoader.class.getResourceAsStream("/fonts/" + fileName))
+                    ResourceLoader.class.getResourceAsStream(FONT_PATH + fileName))
                     .deriveFont(size);
         } catch (Exception e) {
             EventLog.getInstance().addEvent(new Event("Failed to load font: " + fileName, e));

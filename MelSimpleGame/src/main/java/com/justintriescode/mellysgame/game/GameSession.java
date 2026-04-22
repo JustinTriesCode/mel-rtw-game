@@ -120,11 +120,12 @@ public class GameSession extends Observable<GameSession> {
      * Applies a bonus for achieving a "perfect" cycle, incentivizing players
      * to increase the game's difficulty.
      * 
-     * @param difficultyIncreases The number of times the difficulty has been
-     *                            increased.
+     * @param difficultyIncreases  The number of times the difficulty has been
+     *                             increased.
+     * @param difficultyMultiplier The multiplier from the current game mode.
      */
-    public void processPerfectionBonus(int difficultyIncreases) {
-        int finalBonus = (int) Math.round(PERFECT_BONUS * difficultyIncreases);
+    public void processPerfectionBonus(int difficultyIncreases, double difficultyMultiplier) {
+        int finalBonus = (int) Math.round((PERFECT_BONUS * difficultyIncreases) * difficultyMultiplier);
         applyPoints(finalBonus);
     }
 
