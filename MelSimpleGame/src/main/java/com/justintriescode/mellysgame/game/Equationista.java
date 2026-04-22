@@ -20,7 +20,6 @@ import com.justintriescode.mellysgame.events.EventLog;
  * generated equations based on player performance.
  */
 public class Equationista extends BaseMiniGame {
-    private int THRESHOLD = 80; // threshold used for when to reset equations
     private int difficultyIncreases = 0;
     private boolean hardMode = false;
     private HashMap<String, Equation> optionsMap = new HashMap<>();
@@ -32,7 +31,7 @@ public class Equationista extends BaseMiniGame {
     private int triesThisCycleCount = 0;
     private int targetCycleCount;
     private static final double HARD_MODE_SCALE = 2.0;
-    private static final double EASY_MODE_SCALE = 0.42;
+    private static final double EASY_MODE_SCALE = 0.18; // Reduced to balance target score around 1300
 
     /**
      * Initializes the game, sets up key bindings, and starts the game session
@@ -301,9 +300,8 @@ public class Equationista extends BaseMiniGame {
         if (!optionsMap.containsKey(direction))
             return;
 
-        // Check if the board is stale before processing the input
         if (isBoardStale()) {
-            statusMessage = "Resetting the board!";
+            statusMessage = "Resetting the board";
             messageTimer.restart();
             updateOptions();
             return;
@@ -329,10 +327,9 @@ public class Equationista extends BaseMiniGame {
         } else {
             attemptsThisRound++;
             triesThisCycleCount++;
-            statusMessage = "Try again.";
+            statusMessage = "Try again";
             messageTimer.restart();
         }
-
         repaint();
     }
 
@@ -344,7 +341,9 @@ public class Equationista extends BaseMiniGame {
      */
     private void checkResetCondition(int cycleCount) {
         if (isBoardStale()) {
-            statusMessage = "You've gotten all options above " + THRESHOLD + ". Great work! Now randomizing options.";
+            int dynamicThreshold = (int) (max * 0.8); // attempt to keep threshold balanced, to be tested
+            statusMessage = "You've gotten all options above " + dynamicThreshold
+                    + ". Great work! Now randomizing options.";
             updateOptions();
         }
         if (cycleCount >= targetCycleCount) {
@@ -367,11 +366,13 @@ public class Equationista extends BaseMiniGame {
      */
     private boolean isBoardStale() {
         if (optionsMap.values().size() < 4)
-            return false; // Don't check when the board isn't fully initialized
+            return false; // Don't check before board is fully initialized
+
+        int dynamicThreshold = (int) (max * 0.8); // Scales threshold to always be 80% max value
 
         for (Equation eq : optionsMap.values()) {
-            if (eq != null && eq.evaluate() < THRESHOLD) {
-                return false; // low value found so not stale
+            if (eq != null && eq.evaluate() < dynamicThreshold) {
+                return false;
             }
         }
         return true;
@@ -387,7 +388,8 @@ public class Equationista extends BaseMiniGame {
     public void dynamicDifficulty() {
         if (triesThisCycleCount <= 0) {
             increaseDifficulty();
-            session.processPerfectionBonus(difficultyIncreases);
+            double multiplier = hardMode ? HARD_MODE_SCALE : EASY_MODE_SCALE;
+            session.processPerfectionBonus(difficultyIncreases, multiplier);
         } else if (triesThisCycleCount >= targetCycleCount * 2) {
             decreaseDifficulty();
         }

@@ -66,16 +66,14 @@ public class Stats {
         int count = 0;
         if (numberGames) {
             for (SessionRecord record : profile.getSessionHistory()) {
-                if (record.getGameName().equalsIgnoreCase("Numberista")
-                        || record.getGameName().equalsIgnoreCase("Equationista")) {
+                if (record.getGameName().equalsIgnoreCase("Equationista")) {
                     totalScore += record.getScore();
                     count++;
                 }
             }
         } else {
             for (SessionRecord record : profile.getSessionHistory()) {
-                if (record.getGameName().equalsIgnoreCase("LetterSoup")
-                        || record.getGameName().equalsIgnoreCase("AlphabetSoup")) {
+                if (record.getGameName().equalsIgnoreCase("AlphabetSoup")) {
                     totalScore += record.getScore();
                     count++;
                 }

@@ -20,9 +20,10 @@ import java.io.IOException;
 public class GameRunner extends JFrame {
     private static final int WIDTH = 1200;
     private static final int HEIGHT = 800;
+    private static final int SPLASH_DURATION = 3600;
     private CardLayout layout = new CardLayout();
     private JPanel mainContainer = new JPanel(layout);
-    private String currentSymptomSeverity;
+    private String currentSymptomSeverity = "None"; // Default to "None"
     private PlayerProfile playerProfile;
 
     /**
@@ -38,9 +39,18 @@ public class GameRunner extends JFrame {
         getRootPane().putClientProperty("apple.awt.fullscreenable", true);
         this.playerProfile = DataManager.load();
 
+        // Loads the icon to use for the app (reminder: loads from images folder)
         Image appIcon = com.justintriescode.mellysgame.ui.ResourceLoader.loadImage("app_icon.png");
         if (appIcon != null) {
             setIconImage(appIcon);
+            try { // for macOC testing
+                Class<?> taskbarClass = Class.forName("java.awt.Taskbar");
+                Object taskbar = taskbarClass.getMethod("getTaskbar").invoke(null);
+                taskbarClass.getMethod("setIconImage", java.awt.Image.class).invoke(taskbar, appIcon);
+            } catch (Exception e) {
+                EventLog.getInstance()
+                        .addEvent(new Event("Failed to set taskbar icon (probably running on non-MacOS)", e));
+            }
         }
 
         // Register GameRunner to listen for High Score events from the PlayerProfile
@@ -54,9 +64,29 @@ public class GameRunner extends JFrame {
         mainContainer.add(new MenuPanel(this), "MENU");
         add(mainContainer);
         setLocationRelativeTo(null);
-        setVisible(true);
-        // trigger the symptom popup after the UI is visible
-        SwingUtilities.invokeLater(() -> promptForSymptom());
+
+        // Splash Screen Logic (uses app icon)
+        if (appIcon != null) {
+            JWindow splash = new JWindow();
+            splash.setBackground(new Color(0, 0, 0, 0)); // transparent
+            JLabel splashImage = new JLabel(new ImageIcon(appIcon.getScaledInstance(256, 256, Image.SCALE_SMOOTH)));
+            splashImage.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
+            splash.getContentPane().add(splashImage, BorderLayout.CENTER);
+            splash.pack();
+            splash.setLocationRelativeTo(null);
+            splash.setVisible(true);
+
+            Timer splashTimer = new Timer(SPLASH_DURATION, e -> {
+                splash.dispose();
+                setVisible(true);
+                SwingUtilities.invokeLater(() -> promptForSymptom());
+            });
+            splashTimer.setRepeats(false);
+            splashTimer.start();
+        } else {
+            setVisible(true);
+            SwingUtilities.invokeLater(() -> promptForSymptom());
+        }
     }
 
     /**
@@ -81,6 +111,7 @@ public class GameRunner extends JFrame {
         String[] options = { "None", "Mild", "Moderate", "Severe" };
         JRadioButton[] buttons = new JRadioButton[options.length];
 
+        // creates 1 button for each string in options array.
         for (int i = 0; i < options.length; i++) {
             buttons[i] = new JRadioButton(options[i]);
             buttons[i].setFont(new Font("Serif", Font.PLAIN, 18));
