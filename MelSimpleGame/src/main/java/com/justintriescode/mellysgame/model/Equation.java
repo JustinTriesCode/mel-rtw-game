@@ -2,6 +2,11 @@ package com.justintriescode.mellysgame.model;
 
 import java.util.Random;
 
+/**
+ * Represents a mathematical equation used in the game.
+ * Equations can be simple (a single value) or complex (two values with an
+ * operator).
+ */
 public class Equation {
     public enum EquationType {
         SIMPLE, COMPLEX
@@ -13,7 +18,13 @@ public class Equation {
     private Random rand = new Random();
     private EquationType type;
 
-    // EFFECTS: constructs an equation of the given type with random values up to max
+    /**
+     * Constructs an equation of the given type with random values up to the
+     * specified maximum.
+     *
+     * @param type The type of equation to generate (SIMPLE or COMPLEX).
+     * @param max  The maximum boundary for the randomly generated values.
+     */
     public Equation(EquationType type, int max) {
         this.type = type;
         if (type == EquationType.SIMPLE) {
@@ -25,10 +36,16 @@ public class Equation {
             value2 = rand.nextInt(max) + 1;
             operator = "+-*/".charAt(rand.nextInt(4));
         }
-
     }
 
-    // EFFECTS: returns a string representation of the equation
+    /**
+     * Returns a string representation of the equation.
+     * For simple equations, it returns just the numeric value.
+     * For complex equations, it returns the full equation formula (e.g., "5 + 3").
+     *
+     * @return The formatted string representation of the equation.
+     */
+    @Override
     public String toString() {
         if (type == EquationType.SIMPLE) {
             return Integer.toString(value1);
@@ -37,7 +54,11 @@ public class Equation {
         }
     }
 
-    // EFFECTS: evaluates the equation and returns the result
+    /**
+     * Evaluates the mathematical equation and returns its integer result.
+     *
+     * @return The calculated result of the equation.
+     */
     public int evaluate() {
         switch (operator) {
             case '+':
@@ -52,14 +73,24 @@ public class Equation {
         return value1;
     }
 
-    // EFFECTS: compares this equation's value to another's, returning true if this
-    // is greater
+    /**
+     * Compares this equation's evaluated result to another equation's result.
+     *
+     * @param compareWith The equation to compare against.
+     * @return true if this equation's value is strictly greater than the compared
+     *         equation's value.
+     */
     public boolean compareEquationsGreater(Equation compareWith) {
         return this.evaluate() > compareWith.evaluate();
     }
 
-    // EFFECTS: compares this equation's value to another's, returning true if this
-    // is less
+    /**
+     * Compares this equation's evaluated result to another equation's result.
+     *
+     * @param compareWith The equation to compare against.
+     * @return true if this equation's value is strictly less than the compared
+     *         equation's value.
+     */
     public boolean compareEquationsLess(Equation compareWith) {
         return this.evaluate() < compareWith.evaluate();
     }

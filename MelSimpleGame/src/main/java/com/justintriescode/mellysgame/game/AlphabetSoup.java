@@ -2,6 +2,7 @@ package com.justintriescode.mellysgame.game;
 
 import com.justintriescode.mellysgame.ui.GameRunner;
 import com.justintriescode.mellysgame.ui.ResourceLoader;
+import com.justintriescode.mellysgame.ui.UIStyleUtils;
 
 import javax.swing.Timer;
 import java.awt.*;
@@ -26,13 +27,13 @@ public class AlphabetSoup extends BaseMiniGame {
 
     // colour palette for letters
     private Color targetColour;
-    private Color easyModeColor = new Color(200, 200, 190);
+    private Color easyModeColor = UIStyleUtils.OFF_WHITE;
     private final Color[] palette = {
-            new Color(0, 255, 255), // Cyan
-            new Color(220, 130, 220), // Magenta
-            new Color(240, 230, 140), // Yellow
-            new Color(255, 165, 0), // Orange
-            new Color(100, 149, 237) // Blue
+            UIStyleUtils.CYAN,
+            UIStyleUtils.MAGENTA,
+            UIStyleUtils.YELLOW,
+            UIStyleUtils.ORANGE,
+            UIStyleUtils.BLUE
     };
 
     private static final int DELAY = 800; // delay between letter spawns in ms

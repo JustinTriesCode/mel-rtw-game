@@ -139,4 +139,17 @@ public class PlayerProfile extends Observable<PlayerProfile> {
     public void setSessionHistory(List<SessionRecord> history) {
         this.sessionHistory = history;
     }
+
+    /**
+     * Resets all player statistics to their default, empty state.
+     */
+    public void resetStats() {
+        this.totalSessionsPlayed = 0;
+        this.totalLifetimeScore = 0;
+        this.totalLifetimeSeconds = 0;
+        this.topScore = 0;
+        this.topScorerName = "AAA";
+        this.sessionHistory.clear();
+        this.dailyHistory.clear();
+    }
 }
