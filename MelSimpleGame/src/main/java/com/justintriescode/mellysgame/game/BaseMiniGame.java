@@ -122,7 +122,7 @@ public abstract class BaseMiniGame extends JPanel implements Playable, Observer<
                 this.getClass().getSimpleName(),
                 this.hardMode,
                 session.getSessionScore(),
-                session.getStreak());
+                session.getLongestStreak());
     }
 
     protected void stopSpecificTimers() {
