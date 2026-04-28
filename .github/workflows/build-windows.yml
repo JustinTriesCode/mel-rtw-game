@@ -40,7 +40,7 @@ jobs:
             --win-menu `
             --win-dir-chooser `
             --vendor "JustinTriesToCode" `
-            --app-version "1.02"
+            --app-version "1.03"
 
       - name: Upload Release
         uses: softprops/action-gh-release@v2
@@ -80,7 +80,7 @@ jobs:
             --main-class com.justintriescode.mellysgame.Main \
             --icon "src/main/resources/images/app_icon.icns" \
             --vendor "JustinTriesToCode" \
-            --app-version "1.02"
+            --app-version "1.03"
 
       - name: Upload Release
         uses: softprops/action-gh-release@v2
