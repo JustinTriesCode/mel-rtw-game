@@ -84,10 +84,26 @@ public class MenuPanel extends JPanel {
 
         Image appIcon = ResourceLoader.loadImage("app_icon.png");
         if (appIcon != null) {
-            Image scaledIcon = appIcon.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
-            JLabel iconLabel = new JLabel(new ImageIcon(scaledIcon));
-            iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            topRightPanel.add(iconLabel);
+            JPanel iconPanel = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+                    int size = 150;
+                    int x = (getWidth() - size) / 2;
+                    int y = (getHeight() - size) / 2;
+                    g2.drawImage(appIcon, x, y, size, size, this);
+                }
+            };
+            iconPanel.setOpaque(false);
+            iconPanel.setPreferredSize(new Dimension(150, 150));
+            iconPanel.setMaximumSize(new Dimension(150, 150));
+            iconPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            topRightPanel.add(iconPanel);
             topRightPanel.add(Box.createVerticalStrut(30));
         }
 
