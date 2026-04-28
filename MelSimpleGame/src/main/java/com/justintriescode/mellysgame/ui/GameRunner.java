@@ -18,12 +18,10 @@ import java.io.IOException;
  * Manages screen transitions, dialogs, and the lifecycle of game sessions.
  */
 public class GameRunner extends JFrame {
-    private static final int WIDTH = 1200;
-    private static final int HEIGHT = 800;
     private static final int SPLASH_DURATION = 3600;
     private CardLayout layout = new CardLayout();
     private JPanel mainContainer = new JPanel(layout);
-    private String currentSymptomSeverity = "None"; // Default to "None"
+    private String currentSymptomSeverity = "None";
     private PlayerProfile playerProfile;
 
     /**
@@ -34,7 +32,11 @@ public class GameRunner extends JFrame {
     public GameRunner() {
         setTitle("Melly's Minimalist Minigames");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(WIDTH, HEIGHT);
+
+        // Sreen size setup with buffer
+        Rectangle bounds = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int buffer = 20;
+        setSize(bounds.width - buffer, bounds.height - buffer);
 
         getRootPane().putClientProperty("apple.awt.fullscreenable", true);
         this.playerProfile = DataManager.load();
@@ -69,7 +71,7 @@ public class GameRunner extends JFrame {
         if (appIcon != null) {
             JWindow splash = new JWindow();
             splash.setBackground(new Color(0, 0, 0, 0)); // transparent
-            JLabel splashImage = new JLabel(new ImageIcon(appIcon.getScaledInstance(256, 256, Image.SCALE_SMOOTH)));
+            JLabel splashImage = new JLabel(new ImageIcon(appIcon));
             splashImage.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
             splash.getContentPane().add(splashImage, BorderLayout.CENTER);
             splash.pack();

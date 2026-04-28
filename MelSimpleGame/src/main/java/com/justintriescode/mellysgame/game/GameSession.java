@@ -20,6 +20,7 @@ public class GameSession extends Observable<GameSession> {
     private Runnable onTimeUp;
     private boolean isFinished = false; // need to add a check for this later
     private int streak = 0;
+    private int longestStreak = 0;
     private boolean isActive = true;
 
     // for point calculation logic
@@ -43,6 +44,7 @@ public class GameSession extends Observable<GameSession> {
         this.sessionScore = 0;
         this.secondsRemaining = duration;
         this.streak = 0;
+        this.longestStreak = 0;
         this.onTimeUp = onTimeUp;
         this.countdownTimer = new Timer(1000, e -> {
             tick();
@@ -70,6 +72,9 @@ public class GameSession extends Observable<GameSession> {
     public void processScore(int attempts, double difficultyMultiplier, int speedBonus) {
         if (attempts == 0) {
             streak++;
+            if (streak > longestStreak) {
+                longestStreak = streak;
+            }
         } else {
             streak = 0;
         }
@@ -190,5 +195,9 @@ public class GameSession extends Observable<GameSession> {
 
     public int getStreak() {
         return streak;
+    }
+
+    public int getLongestStreak() {
+        return longestStreak;
     }
 }
