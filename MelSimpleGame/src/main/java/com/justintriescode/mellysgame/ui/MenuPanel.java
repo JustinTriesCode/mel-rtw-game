@@ -77,7 +77,22 @@ public class MenuPanel extends JPanel {
         // Container for the timer toggle and Quit button
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.setBackground(UIStyleUtils.BG_COLOR);
-        rightPanel.add(createTimeToggle(), BorderLayout.NORTH);
+
+        JPanel topRightPanel = new JPanel();
+        topRightPanel.setLayout(new BoxLayout(topRightPanel, BoxLayout.Y_AXIS));
+        topRightPanel.setBackground(UIStyleUtils.BG_COLOR);
+
+        Image appIcon = ResourceLoader.loadImage("app_icon.png");
+        if (appIcon != null) {
+            Image scaledIcon = appIcon.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+            JLabel iconLabel = new JLabel(new ImageIcon(scaledIcon));
+            iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            topRightPanel.add(iconLabel);
+            topRightPanel.add(Box.createVerticalStrut(30));
+        }
+
+        topRightPanel.add(createTimeToggle());
+        rightPanel.add(topRightPanel, BorderLayout.NORTH);
 
         JButton quitBtn = new JButton("Quit Game");
         UIStyleUtils.formatButton(quitBtn, 24);
